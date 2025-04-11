@@ -1,3 +1,5 @@
+"use client";
+
 export default function payZakat() {
   return (
     <div className="min-h-screen py-20">

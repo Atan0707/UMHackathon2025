@@ -1,6 +1,10 @@
-import transactionData from '@/data/transaction-history.json';
+"use client";
+
+import { getAllTransactions, formatTxHash, formatDate } from '@/utils/transaction-history';
 
 export default function LiveLedger() {
+  const transactions = getAllTransactions();
+  
   return (
     <div className="min-h-screen py-20">
       <div className="container mx-auto px-4">
@@ -21,13 +25,13 @@ export default function LiveLedger() {
                 </tr>
               </thead>
               <tbody>
-                {transactionData.map((tx, index) => (
+                {transactions.map((tx, index) => (
                   <tr key={index} className={`border-b border-gray-700/50 ${index % 2 === 0 ? 'bg-gray-800/20' : ''}`}>
                     <td className="py-4 px-3 text-gray-400 font-mono text-sm">
-                      {tx.txHash.substring(0, 10)}...
+                      {formatTxHash(tx.txHash)}
                     </td>
                     <td className="py-4 px-3 text-gray-400">
-                      {new Date(tx.dateTime).toLocaleString()}
+                      {formatDate(tx.dateTime)}
                     </td>
                     <td className="py-4 px-3">
                       <span className={`px-2 py-1 rounded-md text-xs font-medium ${
@@ -37,10 +41,10 @@ export default function LiveLedger() {
                       </span>
                     </td>
                     <td className="py-4 px-3 text-gray-400 font-mono text-sm">
-                      {tx.from === 'ZakatContract' ? tx.from : `${tx.from.substring(0, 8)}...`}
+                      {tx.from === 'ZakatContract' ? tx.from : formatTxHash(tx.from, 8)}
                     </td>
                     <td className="py-4 px-3 text-gray-400 font-mono text-sm">
-                      {tx.to === 'ZakatContract' ? tx.to : `${tx.to.substring(0, 8)}...`}
+                      {tx.to === 'ZakatContract' || tx.to.startsWith('Merchant') ? tx.to : formatTxHash(tx.to, 8)}
                     </td>
                     <td className="py-4 px-3 text-gray-300 font-medium">
                       {tx.amount}

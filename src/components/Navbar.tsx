@@ -107,7 +107,8 @@ export default function Navbar() {
               {[
                 { name: "Home", path: "/" },
                 { name: "Live Ledger", path: "/live-ledger" },
-                { name: "Pay Zakat", path: "/pay-zakat" }
+                { name: "Pay Zakat", path: "/pay-zakat" },
+                { name: "Check Balance", path: "/check-balance" }
               ].map((item, index) => (
                 <Link
                   key={index}
@@ -235,7 +236,8 @@ export default function Navbar() {
               {[
                 { name: "Home", path: "/" },
                 { name: "Live Ledger", path: "/live-ledger" },
-                { name: "Pay Zakat", path: "/pay-zakat" }
+                { name: "Pay Zakat", path: "/pay-zakat" },
+                { name: "Check Balance", path: "/check-balance" }
               ].map((item, index) => (
                 <Link
                   key={index}
