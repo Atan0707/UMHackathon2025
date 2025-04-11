@@ -1,0 +1,26 @@
+[
+  {
+    "txHash": "0x7a8b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b",
+    "dateTime": "2023-11-15T08:23:47Z",
+    "type": "Distribution",
+    "from": "ZakatContract",
+    "to": "0xab12cd34ef56gh78ij90kl12mn34op56qr78st",
+    "amount": "1250.00"
+  },
+  {
+    "txHash": "0x1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d",
+    "dateTime": "2023-11-14T14:17:32Z",
+    "type": "Redemption",
+    "from": "0x12ab34cd56ef78gh90ij12kl34mn56op78qr90st",
+    "to": "Merchant GGWP",
+    "amount": "750.00"
+  },
+  {
+    "txHash": "0x3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f",
+    "dateTime": "2023-11-12T10:45:21Z",
+    "type": "Distribution",
+    "from": "ZakatContract",
+    "to": "0xef12gh34ij56kl78mn90op12qr34st56uv78wx",
+    "amount": "2300.00"
+  }
+]
