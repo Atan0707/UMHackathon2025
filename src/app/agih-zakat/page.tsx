@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ethers, Eip1193Provider } from 'ethers';
 import { useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
 import { CONTRACT_ADDRESS, RPC_URL } from '@/utils/config';
@@ -50,14 +50,7 @@ const AgihZakat = () => {
   
   const isConnected = !!currentUserAddress && !!walletProvider;
 
-  useEffect(() => {
-    if (isConnected && currentUserAddress) {
-      checkOwnership();
-      getContractStats();
-    }
-  }, [isConnected, currentUserAddress]);
-
-  const checkOwnership = async () => {
+  const checkOwnership = useCallback(async () => {
     try {
       const provider = new ethers.JsonRpcProvider(RPC_URL);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
@@ -68,9 +61,9 @@ const AgihZakat = () => {
       console.error("Error checking ownership:", error);
       setLoading(false);
     }
-  };
+  }, [currentUserAddress]);
 
-  const getContractStats = async () => {
+  const getContractStats = useCallback(async () => {
     try {
       const provider = new ethers.JsonRpcProvider(RPC_URL);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
@@ -93,7 +86,14 @@ const AgihZakat = () => {
     } catch (error) {
       console.error("Error fetching contract stats:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (isConnected && currentUserAddress) {
+      checkOwnership();
+      getContractStats();
+    }
+  }, [isConnected, currentUserAddress, checkOwnership, getContractStats]);
 
   const distributeZakat = async () => {
     if (!isConnected || !isOwner) return;

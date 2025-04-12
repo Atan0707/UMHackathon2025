@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-interface NDEFErrorEvent {
-    message?: string;
-}
+// interface NDEFErrorEvent {
+//     message?: string;
+// }
 
 export default function Home() {
     // Write state

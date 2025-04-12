@@ -5,13 +5,13 @@ import { ethers } from 'ethers';
 import contractAbi from '@/contracts/abi.json';
 import { CONTRACT_ADDRESS, RPC_URL } from '@/utils/config';
 
-interface NFCRecord {
-    recordType: string;
-    mediaType?: string;
-    data: string;
-    encoding?: string;
-    lang?: string;
-}
+// interface NFCRecord {
+//     recordType: string;
+//     mediaType?: string;
+//     data: string;
+//     encoding?: string;
+//     lang?: string;
+// }
 
 interface NDEFReadingEvent {
     message: {

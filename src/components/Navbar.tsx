@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { toast } from "sonner";
@@ -30,15 +30,7 @@ export default function Navbar() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (isConnected && address) {
-      checkOwnership();
-    } else {
-      setIsOwner(false);
-    }
-  }, [isConnected, address]);
-
-  const checkOwnership = async () => {
+  const checkOwnership = useCallback(async () => {
     try {
       const provider = new ethers.JsonRpcProvider(RPC_URL);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
@@ -48,7 +40,15 @@ export default function Navbar() {
       console.error("Error checking ownership:", error);
       setIsOwner(false);
     }
-  };
+  }, [address]);
+
+  useEffect(() => {
+    if (isConnected && address) {
+      checkOwnership();
+    } else {
+      setIsOwner(false);
+    }
+  }, [isConnected, address, checkOwnership]);
 
   useEffect(() => {
     const handleScroll = () => {
