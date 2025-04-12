@@ -109,7 +109,8 @@ export default function Navbar() {
                 { name: "Live Ledger", path: "/live-ledger" },
                 { name: "Pay Zakat", path: "/pay-zakat" },
                 { name: "Check Balance", path: "/check-balance" },
-                { name: "Zakat Calculator", path: "/calculator" }
+                { name: "Zakat Calculator", path: "/calculator" },
+                { name: "Bayar Online", path: "/bayar"   }
               ].map((item, index) => (
                 <Link
                   key={index}
@@ -239,7 +240,8 @@ export default function Navbar() {
                 { name: "Live Ledger", path: "/live-ledger" },
                 { name: "Pay Zakat", path: "/pay-zakat" },
                 { name: "Check Balance", path: "/check-balance" },
-                { name: "Zakat Calculator", path: "/calculator" }
+                { name: "Zakat Calculator", path: "/calculator" },
+                { name: "Bayar Online", path: "/bayar"   }
               ].map((item, index) => (
                 <Link
                   key={index}
