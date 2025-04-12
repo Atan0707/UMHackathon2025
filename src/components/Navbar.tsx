@@ -6,6 +6,11 @@ import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { ethers } from "ethers";
+import { CONTRACT_ADDRESS, RPC_URL } from "@/utils/config";
+
+// ABI for owner check only
+const CONTRACT_ABI = ["function owner() view returns (address)"];
 
 export default function Navbar() {
   const { open } = useAppKit();
@@ -13,6 +18,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const pathname = usePathname();
 
   const formatAddress = (address: string | undefined) => {
@@ -23,6 +29,26 @@ export default function Navbar() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (isConnected && address) {
+      checkOwnership();
+    } else {
+      setIsOwner(false);
+    }
+  }, [isConnected, address]);
+
+  const checkOwnership = async () => {
+    try {
+      const provider = new ethers.JsonRpcProvider(RPC_URL);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+      const contractOwner = await contract.owner();
+      setIsOwner(contractOwner.toLowerCase() === address?.toLowerCase());
+    } catch (error) {
+      console.error("Error checking ownership:", error);
+      setIsOwner(false);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -110,7 +136,7 @@ export default function Navbar() {
                 // { name: "Pay Zakat", path: "/pay-zakat" },
                 { name: "Semak Baki", path: "/semak-baki" },
                 { name: "Zakat Calculator", path: "/calculator" },
-                { name: "Bayar Online", path: "/bayar"   }
+                { name: "Bayar Online", path: "/bayar" }
               ].map((item, index) => (
                 <Link
                   key={index}
@@ -127,6 +153,22 @@ export default function Navbar() {
                   }`}></span>
                 </Link>
               ))}
+              
+              {isOwner && (
+                <Link
+                  href="/agih-zakat"
+                  className={`group relative px-1 py-2 text-sm font-medium transition-colors ${
+                    isActive("/agih-zakat")
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400"
+                  }`}
+                >
+                  Agih Zakat
+                  <span className={`absolute -bottom-0.5 left-0 h-0.5 bg-emerald-500 transition-all duration-200 ${
+                    isActive("/agih-zakat") ? "w-full" : "w-0 group-hover:w-full"
+                  }`}></span>
+                </Link>
+              )}
               {/* {isConnected && (
                 <Link
                   href="#"
@@ -241,21 +283,35 @@ export default function Navbar() {
                 { name: "Pay Zakat", path: "/pay-zakat" },
                 { name: "Check Balance", path: "/check-balance" },
                 { name: "Zakat Calculator", path: "/calculator" },
-                { name: "Bayar Online", path: "/bayar"   }
+                { name: "Bayar Online", path: "/bayar" }
               ].map((item, index) => (
                 <Link
                   key={index}
                   href={item.path}
                   className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
                     isActive(item.path)
-                      ? "text-emerald-600 dark:text-emerald-400 bg-gray-50 dark:bg-gray-800"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400"
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
+              
+              {isOwner && (
+                <Link
+                  href="/agih-zakat"
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    isActive("/agih-zakat")
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400"
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Agih Zakat
+                </Link>
+              )}
               {isConnected && (
                 <Link
                   href="#"
