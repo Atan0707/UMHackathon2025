@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 
-interface NFCRecord {
-    recordType: string;
-    mediaType?: string;
-    data: string;
-    encoding?: string;
-    lang?: string;
-}
+// interface NFCRecord {
+//     recordType: string;
+//     mediaType?: string;
+//     data: string;
+//     encoding?: string;
+//     lang?: string;
+// }
 
 interface NDEFReadingEvent {
     message: {
