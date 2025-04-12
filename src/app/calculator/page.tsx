@@ -125,7 +125,7 @@ export default function ZakatCalculator() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex justify-center mb-6">
-        <h1 className="text-3xl font-bold text-center inline-flex items-center">
+        <h1 className="text-3xl font-bold text-center inline-flex items-center text-white">
           <span className="mr-2">Zakat</span>
           <RotatingText
             texts={['Kalkulator', 'Pendapatan']}

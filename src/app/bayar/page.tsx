@@ -191,42 +191,42 @@ export default function BayarPage() {
     try {
       setIsProcessing(true);
       setTxStatus('Processing...');
-      
+
       // Convert the jumlah (amount) to wei (assuming it's in RM)
       const amount = ethers.parseEther(formData.jumlah || '0');
-      
+
       // Create provider and connect to the network
       const provider = new ethers.JsonRpcProvider(RPC_URL);
-      
+
       // Get the private key from environment variable
       const privateKey = process.env.NEXT_PUBLIC_PRIVATE_KEY;
-      
+
       if (!privateKey) {
         throw new Error("Private key not found in environment variables");
       }
-      
+
       // Create a wallet with the private key
       const wallet = new ethers.Wallet(privateKey, provider);
-      
+
       // Create the contract instance
       const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, wallet);
-      
+
       // Call the mintZakat function
       const tx = await contract.mintZakat(amount);
-      
+
       // Set the transaction hash
       setTxHash(tx.hash);
-      
+
       // Wait for the transaction to be mined
       const receipt = await tx.wait();
-      
+
       if (receipt.status === 1) {
         setTxStatus('Success');
         setStep(4);
       } else {
         setTxStatus('Failed');
       }
-      
+
     } catch (error) {
       console.error("Error processing payment:", error);
       setTxStatus('Failed');
@@ -625,9 +625,9 @@ export default function BayarPage() {
                     <span className="text-gray-600 mb-1">Blockchain Tx:</span>
                     <div className="flex items-center">
                       <span className="font-medium text-xs mr-2">{txHash.slice(0, 10)}...{txHash.slice(-8)}</span>
-                      <a 
-                        href={`https://sepolia.scrollscan.com/tx/${txHash}`} 
-                        target="_blank" 
+                      <a
+                        href={`https://sepolia.scrollscan.com/tx/${txHash}`}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors flex items-center"
                       >
@@ -672,9 +672,9 @@ export default function BayarPage() {
                     <p className="font-medium mb-1">Transaction Hash:</p>
                     <div className="flex items-center">
                       <p className="truncate text-blue-600 mr-2">{txHash.slice(0, 10)}...{txHash.slice(-8)}</p>
-                      <a 
-                        href={`https://sepolia.scrollscan.com/tx/${txHash}`} 
-                        target="_blank" 
+                      <a
+                        href={`https://sepolia.scrollscan.com/tx/${txHash}`}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
                       >
@@ -694,7 +694,7 @@ export default function BayarPage() {
         {/* Navigation buttons */}
         <div className="mt-8 flex justify-between">
           {step > 1 && step < 4 ? (
-            <button 
+            <button
               onClick={handleBack}
               className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
             >
@@ -722,11 +722,11 @@ export default function BayarPage() {
               </Link>
             </div>
           )}
-          
+
           {/* Hidden button to handle the confirmation from popup window */}
-          <button 
-            id="confirmPayment" 
-            onClick={handleConfirmPayment} 
+          <button
+            id="confirmPayment"
+            onClick={handleConfirmPayment}
             className="hidden"
           >
             Confirm

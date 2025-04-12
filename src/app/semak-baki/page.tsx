@@ -1,70 +1,63 @@
 "use client";
 
 import { useState } from "react";
-import { gql, request } from 'graphql-request';
-import { SUBGRAPH_URL } from '@/utils/config';
+import { CONTRACT_ADDRESS, RPC_URL } from '@/utils/config';
+import { ethers } from 'ethers';
 
-// GraphQL query to fetch recipient balance data
-const GET_RECIPIENT_BALANCE = gql`
-  query GetRecipientBalance($recipientId: String!) {
-    recipient(id: $recipientId) {
-      id
-      balance
-      totalClaimed
-    }
-  }
-`;
-
-interface RecipientBalanceResponse {
-  recipient: {
-    id: string;
-    balance: string;
-    totalClaimed: string;
-  } | null;
-}
+// Import the ABI for the ZakatSystem contract
+import contractAbi from '@/contracts/abi.json';
 
 export default function CheckBalance() {
   const [nricNumber, setNricNumber] = useState("");
-  const [balance, setBalance] = useState<number | null>(null);
-  const [totalClaimed, setTotalClaimed] = useState<number | null>(null);
+  const [recipientData, setRecipientData] = useState<{ name: string, balance: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    
-    // Format the NRIC as recipient ID (assumes format like "recipient-123456789012")
-    const recipientId = `recipient-${nricNumber.replace(/[-\s]/g, '')}`;
-    
+
     try {
-      // Query The Graph for recipient data
-      const response = await request<RecipientBalanceResponse>(
-        SUBGRAPH_URL,
-        GET_RECIPIENT_BALANCE,
-        { recipientId }
-      );
-      
-      // Check if recipient exists
-      if (!response.recipient) {
+      // Use the NRIC exactly as entered without removing dashes
+      const formattedNric = nricNumber;
+
+      // Create provider and connect to the network
+      const provider = new ethers.JsonRpcProvider(RPC_URL);
+
+      // Get the private key from environment variable
+      const privateKey = process.env.NEXT_PUBLIC_PRIVATE_KEY;
+
+      if (!privateKey) {
+        throw new Error("Private key not found in environment variables");
+      }
+
+      // Create a wallet with the private key
+      const wallet = new ethers.Wallet(privateKey, provider);
+
+      // Create the contract instance
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, wallet);
+
+      // Call the recipients function to get user data
+      const recipient = await contract.recipients(formattedNric);
+
+      // Check if recipient exists (isRegistered should be true)
+      if (!recipient || !recipient.isRegistered) {
         setError("Data tiada dalam rekod");
-        setBalance(null);
-        setTotalClaimed(null);
+        setRecipientData(null);
         return;
       }
-      
-      // Convert balance from wei to ZKT (assuming 18 decimals)
-      const balanceInZKT = Number(response.recipient.balance) / 1e18;
-      const claimedInZKT = Number(response.recipient.totalClaimed) / 1e18;
-      
-      setBalance(balanceInZKT);
-      setTotalClaimed(claimedInZKT);
+
+      // Set the recipient data including name and token amount
+      setRecipientData({
+        name: recipient.name,
+        balance: parseFloat(ethers.formatEther(recipient.tokenAmount || 0)).toFixed(2)
+      });
+
     } catch (err) {
       console.error("Error fetching balance:", err);
-      setError("Data tiada dalam rekod");
-      setBalance(null);
-      setTotalClaimed(null);
+      setError("Error fetching data. Please try again.");
+      setRecipientData(null);
     } finally {
       setIsLoading(false);
     }
@@ -79,9 +72,9 @@ export default function CheckBalance() {
         <p className="text-lg text-gray-300 text-center max-w-2xl mb-12">
           Masukkan NRIC untuk semak baki zakat anda
         </p>
-        
+
         <div className="w-full max-w-md bg-gray-800/30 backdrop-blur-md rounded-xl p-8 shadow-lg border border-gray-700/50">
-          {balance === null ? (
+          {recipientData === null ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="nric" className="block text-sm font-medium text-gray-300 mb-2">
@@ -97,7 +90,7 @@ export default function CheckBalance() {
                   required
                 />
               </div>
-              
+
               <button
                 type="submit"
                 disabled={isLoading}
@@ -115,7 +108,7 @@ export default function CheckBalance() {
                   "Semak Baki"
                 )}
               </button>
-              
+
               {error && (
                 <div className="mt-3 text-red-400 text-sm">
                   {error}
@@ -124,20 +117,17 @@ export default function CheckBalance() {
             </form>
           ) : (
             <div className="text-center py-6">
-              <h2 className="text-xl font-semibold text-gray-200 mb-2">Balance for NRIC: {nricNumber}</h2>
-              <div className="text-5xl font-bold text-emerald-400 mb-4">{balance.toLocaleString()} ZKT</div>
-              
-              {totalClaimed !== null && totalClaimed > 0 && (
-                <div className="mb-6">
-                  <p className="text-gray-400 text-sm">Total Claimed</p>
-                  <p className="text-lg text-emerald-300">{totalClaimed.toLocaleString()} ZKT</p>
-                </div>
-              )}
-              
+              <h2 className="text-xl font-semibold text-gray-200 mb-2">
+                {recipientData.name}
+              </h2>
+              <p className="text-sm text-gray-400 mb-1">NRIC: {nricNumber}</p>
+              <div className="text-5xl font-bold text-emerald-400 mb-6">
+                {recipientData.balance} ZKT
+              </div>
+
               <button
                 onClick={() => {
-                  setBalance(null);
-                  setTotalClaimed(null);
+                  setRecipientData(null);
                   setNricNumber("");
                 }}
                 className="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"

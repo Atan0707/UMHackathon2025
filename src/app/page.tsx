@@ -1,67 +1,58 @@
 "use client";
 
-import { gql, request } from 'graphql-request';
-import { useQuery } from '@tanstack/react-query';
-import { SUBGRAPH_URL } from '@/utils/config';
 import { useEffect, useState } from 'react';
-
-// Define types for GraphQL response
-interface ZakatStatisticsResponse {
-  transfers: { value: string }[];
-  tokenClaimeds: { amount: string }[];
-}
-
-// GraphQL query to fetch zakat statistics
-const GET_ZAKAT_STATISTICS = gql`
-  query GetZakatStatistics {
-    transfers(where: {from: "0x0000000000000000000000000000000000000000"}) {
-      value
-    }
-    tokenClaimeds {
-      amount
-    }
-  }
-`;
+import { ethers } from 'ethers';
+import { CONTRACT_ADDRESS, RPC_URL } from '@/utils/config';
+import contractAbi from '@/contracts/abi.json';
 
 export default function Home() {
   const [totalCollected, setTotalCollected] = useState<string>("0");
   const [totalDistributed, setTotalDistributed] = useState<string>("0");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
 
-  // Fetch zakat statistics using react-query
-  const { isLoading, error, refetch } = useQuery({
-    queryKey: ['zakatStatistics'],
-    queryFn: async () => {
-      try {
-        const response = await request<ZakatStatisticsResponse>(SUBGRAPH_URL, GET_ZAKAT_STATISTICS);
-        
-        // Calculate total collected (sum of all minted tokens)
-        const collected = response.transfers.reduce(
-          (sum: number, tx: { value: string }) => sum + Number(tx.value), 0
-        ) / 1e18;
-        
-        // Calculate total distributed (sum of all claimed tokens)
-        const distributed = response.tokenClaimeds.reduce(
-          (sum: number, tx: { amount: string }) => sum + Number(tx.amount), 0
-        ) / 1e18;
-        
-        // Format numbers with commas and 2 decimal places
-        setTotalCollected(collected.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-        setTotalDistributed(distributed.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-        
-        return { collected, distributed };
-      } catch (err) {
-        console.error('Error fetching zakat data:', err);
-        throw err;
-      }
-    },
-    // Poll every 60 seconds for updates
-    refetchInterval: 60000
-  });
-  
+  const fetchZakatData = async () => {
+    try {
+      setIsLoading(true);
+      setError(false);
+
+      // Create provider and connect to the contract
+      const provider = new ethers.JsonRpcProvider(RPC_URL);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, provider);
+
+      // Get distributed and undistributed amounts
+      const distributed = await contract.getTotalDistributedTokens();
+      const undistributed = await contract.getUndistributedTokens();
+
+      // Calculate total collected (distributed + undistributed)
+      const collected = distributed + undistributed;
+
+      // Format values (divide by 10^18 for 18 decimals and format with 2 decimal places)
+      const formattedCollected = parseFloat(ethers.formatEther(collected)).toLocaleString('en-MY',
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      const formattedDistributed = parseFloat(ethers.formatEther(distributed)).toLocaleString('en-MY',
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      setTotalCollected(formattedCollected);
+      setTotalDistributed(formattedDistributed);
+    } catch (err) {
+      console.error('Error fetching zakat data:', err);
+      setError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Fetch on component mount
   useEffect(() => {
-    refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchZakatData();
+
+    // Set up interval to refresh data every 60 seconds
+    const interval = setInterval(fetchZakatData, 60000);
+
+    // Clean up interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -69,7 +60,7 @@ export default function Home() {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto bg-gray-800/30 backdrop-blur-md rounded-xl p-8 shadow-lg border border-gray-700/50">
           <h1 className="text-4xl font-bold text-white mb-8 text-center">Zakat Dashboard</h1>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Collected Zakat */}
             <div className="bg-gray-900/50 rounded-lg p-6 border border-emerald-700/50">
@@ -84,7 +75,7 @@ export default function Home() {
                 <div className="text-4xl font-bold text-emerald-400 mb-1">RM {totalCollected}</div>
               )}
             </div>
-            
+
             {/* Distributed Zakat */}
             <div className="bg-gray-900/50 rounded-lg p-6 border border-emerald-700/50">
               <div className="text-gray-400 mb-2">Total Zakat Distribution</div>
