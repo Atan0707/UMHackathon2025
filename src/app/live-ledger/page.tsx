@@ -215,58 +215,58 @@ export default function LiveLedger() {
   const hasTransactions = data && data.length > 0;
   
   return (
-    <div className="min-h-screen py-20">
+    <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
         {/* Zakat Dashboard */}
-        <div className="max-w-4xl mx-auto bg-gray-200 rounded-lg p-8 mb-12">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Zakat Dashboard</h2>
+        <div className="max-w-4xl mx-auto bg-gray-800 rounded-lg p-6 mb-10">
+          <h2 className="text-xl font-medium text-center text-gray-100 mb-6">Zakat Dashboard</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Collected Zakat */}
-            <div className="bg-gray-700 rounded-lg p-6 text-center">
-              <div className="text-gray-300 mb-3">Total Zakat Collected</div>
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
+              <div className="text-gray-400 text-sm mb-2">Total Zakat Collected</div>
               {isLoadingZakat ? (
-                <div className="flex items-center justify-center h-14">
-                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-emerald-400"></div>
+                <div className="flex items-center justify-center h-12">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
                 </div>
               ) : errorZakat ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <div className="text-5xl font-bold text-emerald-400">RM {totalCollected}</div>
+                <div className="text-3xl font-medium text-gray-100">RM {totalCollected}</div>
               )}
             </div>
 
             {/* Distributed Zakat */}
-            <div className="bg-gray-700 rounded-lg p-6 text-center">
-              <div className="text-gray-300 mb-3">Total Zakat Distribution</div>
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
+              <div className="text-gray-400 text-sm mb-2">Total Zakat Distribution</div>
               {isLoadingZakat ? (
-                <div className="flex items-center justify-center h-14">
-                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-emerald-400"></div>
+                <div className="flex items-center justify-center h-12">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
                 </div>
               ) : errorZakat ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <div className="text-5xl font-bold text-emerald-400">RM {totalDistributed}</div>
+                <div className="text-3xl font-medium text-gray-100">RM {totalDistributed}</div>
               )}
             </div>
           </div>
         </div>
 
-        <h1 className="text-5xl font-extrabold text-white tracking-tight mb-8 max-w-4xl mx-auto">
+        <h1 className="text-xl font-medium text-gray-100 mb-4 max-w-4xl mx-auto">
           Transaction History
         </h1>
-        <div className="w-full max-w-4xl mx-auto p-8 bg-gray-800/30 backdrop-blur-md rounded-xl shadow-lg border border-gray-700/50">
+        <div className="w-full max-w-4xl mx-auto bg-gray-800 rounded-lg overflow-hidden">
           {isLoading ? (
             <div className="flex justify-center items-center py-10">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-gray-600 border-t-gray-300"></div>
             </div>
           ) : error ? (
             <div className="text-red-400 text-center py-10">
-              <p>Failed to load transaction data. Please try again.</p>
+              <p>Failed to load transaction data.</p>
               <p className="text-xs mt-2 opacity-70">Error: {error instanceof Error ? error.message : 'Unknown error'}</p>
               <button 
                 onClick={() => refetch()} 
-                className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded text-sm"
               >
                 Retry
               </button>
@@ -279,7 +279,7 @@ export default function LiveLedger() {
               </p>
               <button 
                 onClick={() => refetch()} 
-                className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded text-sm"
               >
                 Refresh
               </button>
@@ -287,48 +287,48 @@ export default function LiveLedger() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="py-4 px-3 text-gray-300 font-semibold">Tx Hash</th>
-                    <th className="py-4 px-3 text-gray-300 font-semibold">Date and Time</th>
-                    <th className="py-4 px-3 text-gray-300 font-semibold">Type</th>
-                    <th className="py-4 px-3 text-gray-300 font-semibold">From</th>
-                    <th className="py-4 px-3 text-gray-300 font-semibold">To</th>
-                    <th className="py-4 px-3 text-gray-300 font-semibold">Amount (ZKT)</th>
+                <thead className="bg-gray-900">
+                  <tr>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Tx Hash</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Date and Time</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Type</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">From</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">To</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Amount (ZKT)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.map((tx, index) => (
-                    <tr key={index} className={`border-b border-gray-700/50 ${index % 2 === 0 ? 'bg-gray-800/20' : ''}`}>
-                      <td className="py-4 px-3 text-gray-400 font-mono text-sm">
+                    <tr key={index} className={`border-t border-gray-700 ${index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-750'} hover:bg-gray-700`}>
+                      <td className="py-3 px-4 text-gray-300 font-mono text-xs">
                         <a 
                           href={`https://sepolia.scrollscan.com/tx/${tx.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-400 hover:text-blue-300 hover:underline transition-colors"
+                          className="text-blue-400 hover:text-blue-300"
                         >
                           {formatTxHash(tx.txHash)}
                         </a>
                       </td>
-                      <td className="py-4 px-3 text-gray-400">
+                      <td className="py-3 px-4 text-sm text-gray-300 whitespace-nowrap">
                         {formatDate(tx.dateTime)}
                       </td>
-                      <td className="py-4 px-3">
-                        <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          tx.type === 'Distribution' ? 'bg-green-900/40 text-green-400' : 
-                          tx.type === 'Redemption' ? 'bg-purple-900/40 text-purple-400' :
-                          'bg-blue-900/40 text-blue-400'
+                      <td className="py-3 px-4">
+                        <span className={`inline-block px-2 py-1 text-xs rounded ${
+                          tx.type === 'Distribution' ? 'bg-green-900 text-green-300' : 
+                          tx.type === 'Redemption' ? 'bg-purple-900 text-purple-300' :
+                          'bg-blue-900 text-blue-300'
                         }`}>
                           {tx.type}
                         </span>
                       </td>
-                      <td className="py-4 px-3 text-gray-400 font-mono text-sm">
+                      <td className="py-3 px-4 text-sm text-gray-300 font-mono">
                         {tx.from === 'ZakatContract' || tx.from === 'Treasury' ? tx.from : formatTxHash(tx.from, 8)}
                       </td>
-                      <td className="py-4 px-3 text-gray-400 font-mono text-sm">
+                      <td className="py-3 px-4 text-sm text-gray-300 font-mono">
                         {tx.to === 'ZakatContract' || tx.to.includes('Merchant') || tx.to.includes('Recipients') ? tx.to : formatTxHash(tx.to, 8)}
                       </td>
-                      <td className="py-4 px-3 text-gray-300 font-medium">
+                      <td className="py-3 px-4 text-sm text-gray-100 font-medium">
                         {tx.amount}
                       </td>
                     </tr>
