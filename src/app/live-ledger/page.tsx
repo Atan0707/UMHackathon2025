@@ -1,10 +1,12 @@
 "use client";
 
 import { formatTxHash, formatDate, Transaction } from '@/utils/transaction-history';
-import { SUBGRAPH_URL } from '@/utils/config';
+import { SUBGRAPH_URL, CONTRACT_ADDRESS, RPC_URL } from '@/utils/config';
 import { gql, request } from 'graphql-request';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
+import contractAbi from '@/contracts/abi.json';
 
 // Define types for GraphQL response
 interface TokenClaimed {
@@ -85,6 +87,46 @@ const GET_TRANSACTIONS = gql`
 `;
 
 export default function LiveLedger() {
+  // Add state for zakat dashboard
+  const [totalCollected, setTotalCollected] = useState<string>("0");
+  const [totalDistributed, setTotalDistributed] = useState<string>("0");
+  const [isLoadingZakat, setIsLoadingZakat] = useState<boolean>(true);
+  const [errorZakat, setErrorZakat] = useState<boolean>(false);
+
+  // Fetch dashboard data
+  const fetchZakatData = async () => {
+    try {
+      setIsLoadingZakat(true);
+      setErrorZakat(false);
+
+      // Create provider and connect to the contract
+      const provider = new ethers.JsonRpcProvider(RPC_URL);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, provider);
+
+      // Get distributed and undistributed amounts
+      const distributed = await contract.getTotalDistributedTokens();
+      const undistributed = await contract.getUndistributedTokens();
+
+      // Calculate total collected (distributed + undistributed)
+      const collected = distributed + undistributed;
+
+      // Format values (divide by 10^18 for 18 decimals and format with 2 decimal places)
+      const formattedCollected = parseFloat(ethers.formatEther(collected)).toLocaleString('en-MY',
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      const formattedDistributed = parseFloat(ethers.formatEther(distributed)).toLocaleString('en-MY',
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      setTotalCollected(formattedCollected);
+      setTotalDistributed(formattedDistributed);
+    } catch (err) {
+      console.error('Error fetching zakat data:', err);
+      setErrorZakat(true);
+    } finally {
+      setIsLoadingZakat(false);
+    }
+  };
+
   // Fetch transactions using react-query with polling for real-time updates
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['transactions'],
@@ -153,9 +195,19 @@ export default function LiveLedger() {
     refetchInterval: 30000
   });
   
-  // Manually fetch on component mount
+  // Fetch both dashboard and transaction data on mount
   useEffect(() => {
     refetch();
+    fetchZakatData();
+    
+    // Set up interval to refresh data every 60 seconds
+    const interval = setInterval(() => {
+      refetch();
+      fetchZakatData();
+    }, 60000);
+    
+    // Clean up interval on unmount
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
@@ -165,6 +217,41 @@ export default function LiveLedger() {
   return (
     <div className="min-h-screen py-20">
       <div className="container mx-auto px-4">
+        {/* Zakat Dashboard */}
+        <div className="max-w-4xl mx-auto bg-gray-200 rounded-lg p-8 mb-12">
+          <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Zakat Dashboard</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Collected Zakat */}
+            <div className="bg-gray-700 rounded-lg p-6 text-center">
+              <div className="text-gray-300 mb-3">Total Zakat Collected</div>
+              {isLoadingZakat ? (
+                <div className="flex items-center justify-center h-14">
+                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-emerald-400"></div>
+                </div>
+              ) : errorZakat ? (
+                <div className="text-red-400 text-sm">Failed to load data</div>
+              ) : (
+                <div className="text-5xl font-bold text-emerald-400">RM {totalCollected}</div>
+              )}
+            </div>
+
+            {/* Distributed Zakat */}
+            <div className="bg-gray-700 rounded-lg p-6 text-center">
+              <div className="text-gray-300 mb-3">Total Zakat Distribution</div>
+              {isLoadingZakat ? (
+                <div className="flex items-center justify-center h-14">
+                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-emerald-400"></div>
+                </div>
+              ) : errorZakat ? (
+                <div className="text-red-400 text-sm">Failed to load data</div>
+              ) : (
+                <div className="text-5xl font-bold text-emerald-400">RM {totalDistributed}</div>
+              )}
+            </div>
+          </div>
+        </div>
+
         <h1 className="text-5xl font-extrabold text-white tracking-tight mb-8 max-w-4xl mx-auto">
           Transaction History
         </h1>
