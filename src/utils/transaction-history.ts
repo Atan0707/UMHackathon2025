@@ -5,7 +5,7 @@ import transactionData from '@/data/transaction-history.json';
 export interface Transaction {
   txHash: string;
   dateTime: string;
-  type: 'Distribution' | 'Redemption';
+  type: 'Distribution' | 'Redemption' | 'Mint';
   from: string;
   to: string;
   amount: string;
@@ -28,7 +28,7 @@ export const formatDate = (dateString: string): string => {
 };
 
 // Get transactions by type
-export const getTransactionsByType = (type: 'Distribution' | 'Redemption'): Transaction[] => {
+export const getTransactionsByType = (type: 'Distribution' | 'Redemption' | 'Mint'): Transaction[] => {
   return (transactionData as Transaction[]).filter(tx => tx.type === type);
 };
 

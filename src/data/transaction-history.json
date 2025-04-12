@@ -1,5 +1,13 @@
 [
   {
+    "txHash": "0xbce23f58a190d50f9c4789a5b15a02b4fd59c3af42e85848e753d63b39204970",
+    "dateTime": "2023-11-16T09:12:35Z",
+    "type": "Mint",
+    "from": "Treasury",
+    "to": "ZakatContract",
+    "amount": "10000.00"
+  },
+  {
     "txHash": "0x7a8b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b",
     "dateTime": "2023-11-15T08:23:47Z",
     "type": "Distribution",
