@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { CONTRACT_ADDRESS, RPC_URL } from '@/utils/config';
+import { ethers } from 'ethers';
+
+// Import the ABI for the ZakatSystem contract
+import contractAbi from '@/contracts/abi.json';
 
 export default function BayarPage() {
   const [step, setStep] = useState(1);
@@ -16,6 +21,9 @@ export default function BayarPage() {
     tahun: '2025',
     jumlah: ''
   });
+  const [txHash, setTxHash] = useState('');
+  const [txStatus, setTxStatus] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -26,7 +34,207 @@ export default function BayarPage() {
   };
 
   const handleNext = () => {
-    if (step < 4) setStep(step + 1);
+    if (step === 3) {
+      const bankWindow = window.open('', '_blank', 'width=500,height=600');
+      if (bankWindow) {
+        bankWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Bank Online Payment</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 0;
+                padding: 0;
+                background-color: #fcfcfc;
+              }
+              .container {
+                position: relative;
+                width: 100%;
+                height: 100vh;
+              }
+              .header {
+                background-color: #000;
+                padding: 15px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 3px solid #FFD700;
+              }
+              .logo {
+                color: #FFD700;
+                font-size: 24px;
+                font-weight: bold;
+              }
+              .logout {
+                color: white;
+                text-decoration: none;
+                font-size: 14px;
+              }
+              .content {
+                padding: 20px;
+              }
+              .payment-details {
+                margin-top: 20px;
+              }
+              .payment-box {
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 15px;
+                margin-bottom: 20px;
+              }
+              .detail-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 0;
+                border-bottom: 1px solid #eee;
+              }
+              .detail-row:last-child {
+                border-bottom: none;
+              }
+              .verification-box {
+                background-color: #FFFFCC;
+                padding: 15px;
+                border-radius: 4px;
+                margin: 20px 0;
+              }
+              .button-container {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                margin-top: 20px;
+              }
+              .confirm-btn {
+                background-color: #FFD700;
+                border: none;
+                color: #000;
+                padding: 10px 20px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: bold;
+              }
+              .back-btn {
+                background: none;
+                border: none;
+                color: blue;
+                cursor: pointer;
+                text-decoration: underline;
+              }
+              h2 {
+                text-align: center;
+                margin-bottom: 20px;
+              }
+              .radio-dot {
+                margin-right: 10px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <div class="logo">Bank Online Payment</div>
+                <a href="#" class="logout">Logout</a>
+              </div>
+              <div class="content">
+                <h2>Online Payment</h2>
+                <div class="payment-box">
+                  <div class="detail-row">
+                    <span>From Account:</span>
+                    <span>SA-i</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Corporation Name:</span>
+                    <span>Zakat System</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Bill account no.:</span>
+                    <span>ZKT-0101</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Amount:</span>
+                    <span>RM${formData.jumlah || '0'}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>Effective date:</span>
+                    <span>Today</span>
+                  </div>
+                  <div class="detail-row">
+                    <span>TAC</span>
+                    <span>☑</span>
+                  </div>
+                </div>
+                <div class="verification-box">
+                  <div style="display: flex; align-items: center;">
+                    <span class="radio-dot">⚪</span>
+                    <span>Secure Verification ℹ️</span>
+                  </div>
+                  <p>You will receive a notification on your phone to authorise this transaction on the new Maybank app.</p>
+                </div>
+                <div class="button-container">
+                  <button class="confirm-btn" onclick="window.close(); window.opener.document.getElementById('confirmPayment').click();">Confirm</button>
+                  <span style="margin-top: 10px;">or</span>
+                  <button class="back-btn" onclick="window.close();">Go back</button>
+                </div>
+              </div>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+    } else if (step < 4) {
+      setStep(step + 1);
+    }
+  };
+
+  const handleConfirmPayment = async () => {
+    try {
+      setIsProcessing(true);
+      setTxStatus('Processing...');
+      
+      // Convert the jumlah (amount) to wei (assuming it's in RM)
+      const amount = ethers.parseEther(formData.jumlah || '0');
+      
+      // Create provider and connect to the network
+      const provider = new ethers.JsonRpcProvider(RPC_URL);
+      
+      // Get the private key from environment variable
+      const privateKey = process.env.NEXT_PUBLIC_PRIVATE_KEY;
+      
+      if (!privateKey) {
+        throw new Error("Private key not found in environment variables");
+      }
+      
+      // Create a wallet with the private key
+      const wallet = new ethers.Wallet(privateKey, provider);
+      
+      // Create the contract instance
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, wallet);
+      
+      // Call the mintZakat function
+      const tx = await contract.mintZakat(amount);
+      
+      // Set the transaction hash
+      setTxHash(tx.hash);
+      
+      // Wait for the transaction to be mined
+      const receipt = await tx.wait();
+      
+      if (receipt.status === 1) {
+        setTxStatus('Success');
+        setStep(4);
+      } else {
+        setTxStatus('Failed');
+      }
+      
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      setTxStatus('Failed');
+      // Still proceed to next step for demo purposes
+      setStep(4);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleBack = () => {
@@ -412,6 +620,33 @@ export default function BayarPage() {
                   <span className="text-gray-600">No. Resit:</span>
                   <span className="font-medium text-gray-500">ZKT-{Math.floor(Math.random() * 10000).toString().padStart(4, '0')}</span>
                 </div>
+                {txHash && (
+                  <div className="flex flex-col mt-3 pt-3 border-t border-gray-200">
+                    <span className="text-gray-600 mb-1">Blockchain Tx:</span>
+                    <div className="flex items-center">
+                      <span className="font-medium text-xs mr-2">{txHash.slice(0, 10)}...{txHash.slice(-8)}</span>
+                      <a 
+                        href={`https://sepolia.scrollscan.com/tx/${txHash}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors flex items-center"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        View
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {txStatus && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Status:</span>
+                    <span className={`font-medium ${txStatus === 'Success' ? 'text-green-600' : txStatus === 'Failed' ? 'text-red-600' : 'text-yellow-600'}`}>
+                      {txStatus}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             <button className="mt-6 px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
@@ -420,10 +655,46 @@ export default function BayarPage() {
           </div>
         )}
 
+        {isProcessing && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+              <div className="flex flex-col items-center">
+                <div className="mb-4">
+                  <svg className="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Transaksi Sedang Diproses</h3>
+                <p className="text-gray-600 text-center mb-2">Pembayaran zakat anda sedang direkodkan di blockchain</p>
+                {txHash && (
+                  <div className="text-xs text-gray-500 mt-2 bg-gray-50 p-3 rounded w-full">
+                    <p className="font-medium mb-1">Transaction Hash:</p>
+                    <div className="flex items-center">
+                      <p className="truncate text-blue-600 mr-2">{txHash.slice(0, 10)}...{txHash.slice(-8)}</p>
+                      <a 
+                        href={`https://sepolia.scrollscan.com/tx/${txHash}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
+                      >
+                        View on Explorer
+                      </a>
+                    </div>
+                  </div>
+                )}
+                <div className="mt-4 w-full bg-gray-200 rounded-full h-2.5">
+                  <div className="bg-blue-600 h-2.5 rounded-full animate-pulse w-full"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Navigation buttons */}
         <div className="mt-8 flex justify-between">
-          {step > 1 ? (
-            <button
+          {step > 1 && step < 4 ? (
+            <button 
               onClick={handleBack}
               className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
             >
@@ -445,10 +716,21 @@ export default function BayarPage() {
               SETERUSNYA
             </button>
           ) : (
-            <Link href="/" className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
-              KEMBALI KE LAMAN UTAMA
-            </Link>
+            <div className="w-full flex justify-center">
+              <Link href="/" className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                KEMBALI KE LAMAN UTAMA
+              </Link>
+            </div>
           )}
+          
+          {/* Hidden button to handle the confirmation from popup window */}
+          <button 
+            id="confirmPayment" 
+            onClick={handleConfirmPayment} 
+            className="hidden"
+          >
+            Confirm
+          </button>
         </div>
       </div>
     </div>

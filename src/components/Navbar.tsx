@@ -107,8 +107,8 @@ export default function Navbar() {
               {[
                 { name: "Home", path: "/" },
                 { name: "Live Ledger", path: "/live-ledger" },
-                { name: "Pay Zakat", path: "/pay-zakat" },
-                { name: "Check Balance", path: "/check-balance" },
+                // { name: "Pay Zakat", path: "/pay-zakat" },
+                { name: "Semak Baki", path: "/semak-baki" },
                 { name: "Zakat Calculator", path: "/calculator" },
                 { name: "Bayar Online", path: "/bayar"   }
               ].map((item, index) => (
@@ -127,7 +127,7 @@ export default function Navbar() {
                   }`}></span>
                 </Link>
               ))}
-              {isConnected && (
+              {/* {isConnected && (
                 <Link
                   href="#"
                   className={`group relative px-1 py-2 text-sm font-medium transition-colors flex items-center gap-1 ${
@@ -153,7 +153,7 @@ export default function Navbar() {
                     isActive("#") ? "w-full" : "w-0 group-hover:w-full"
                   }`}></span>
                 </Link>
-              )}
+              )} */}
             </div>
           </div>
 
