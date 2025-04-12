@@ -28,12 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-blue-50 via-white to-emerald-50 min-h-screen`}
       >
         <AppKit>
           <Navbar />
           <Toaster position="top-right" richColors />
-          <div className="pt-16">
+          <div className="pt-16 relative z-10">
             {children}
           </div>
         </AppKit>
