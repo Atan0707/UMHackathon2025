@@ -46,7 +46,7 @@ export default function Home() {
     return (
         <div className="flex flex-col items-center min-h-screen p-8">
             <div className="w-full max-w-md">
-                <h1 className="text-2xl font-bold text-center mb-6">NFC Writer</h1>
+                <h1 className="text-2xl font-bold text-center mb-6">IC number to card</h1>
 
                 {!isNfcSupported && (
                     <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
@@ -58,7 +58,7 @@ export default function Home() {
 
                 <div className="mb-6">
                     <label className="block mb-2 text-sm font-medium">
-                        Text to Write
+                        IC number
                     </label>
                     <input
                         type="text"
@@ -68,7 +68,7 @@ export default function Home() {
                         className="w-full p-3 border rounded-lg"
                     />
                     <p className="text-sm text-gray-500 mt-1">
-                        Format: ID-ID-ID (example: 234234-23423-23423)
+                        Format: ID-ID-ID (example: 0145304-10-3248)
                     </p>
                 </div>
 
@@ -99,15 +99,6 @@ export default function Home() {
                     </div>
                 )}
 
-                <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <h2 className="font-medium mb-2">Instructions:</h2>
-                    <ol className="list-decimal list-inside text-sm space-y-2">
-                        <li>Enter the ID string you want to write</li>
-                        <li>Click &quot;Write to NFC Tag&quot;</li>
-                        <li>Hold your NFC tag close to the back of your device</li>
-                        <li>Keep the tag near until writing is complete</li>
-                    </ol>
-                </div>
             </div>
         </div>
     );

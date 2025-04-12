@@ -168,7 +168,7 @@ export default function Home() {
     return (
         <div className="flex flex-col items-center min-h-screen p-8">
             <div className="w-full max-w-md">
-                <h1 className="text-2xl font-bold text-center mb-6">Pay with NFC</h1>
+                <h1 className="text-2xl font-bold text-center mb-6">Pay</h1>
 
                 {!isNfcSupported && (
                     <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
@@ -204,7 +204,7 @@ export default function Home() {
                             <button
                                 onClick={() => setMode('product')}
                                 className={`flex-1 py-2 rounded-l-lg font-medium ${mode === 'product'
-                                    ? 'bg-blue-600 text-white'
+                                    ? 'bg-emerald-500 text-white'
                                     : 'bg-gray-200 text-gray-700'}`}
                             >
                                 Scan Products
@@ -215,7 +215,7 @@ export default function Home() {
                                 className={`flex-1 py-2 rounded-r-lg font-medium ${cart.length === 0
                                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                     : mode === 'payment'
-                                        ? 'bg-blue-600 text-white'
+                                        ? 'bg-emerald-500 text-white'
                                         : 'bg-gray-200 text-gray-700'
                                     }`}
                             >
@@ -274,7 +274,7 @@ export default function Home() {
                                         disabled={!isNfcSupported}
                                         className={`w-full p-3 mb-6 rounded-lg font-medium ${!isNfcSupported
                                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                                            : 'bg-emerald-500 text-white hover:bg-blue-700'
                                             }`}
                                     >
                                         Scan Products
@@ -300,7 +300,7 @@ export default function Home() {
                                         <p className="text-blue-800 dark:text-blue-200 font-medium">
                                             Waiting for payment card...
                                         </p>
-                                        <p className="text-blue-600 dark:text-blue-300 text-sm mt-2">
+                                        <p className="text-emerald-500 dark:text-blue-300 text-sm mt-2">
                                             Hold your ID card near the device
                                         </p>
                                     </div>
@@ -335,16 +335,6 @@ export default function Home() {
                         )}
                     </>
                 )}
-
-                <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <h2 className="font-medium mb-2">Instructions:</h2>
-                    <ol className="list-decimal list-inside text-sm space-y-2">
-                        <li>First scan your products by clicking "Scan Products"</li>
-                        <li>Hold each product&apos;s NFC tag near your device</li>
-                        <li>When done, click "Payment" to proceed</li>
-                        <li>Click "Pay Now" and scan your ID card to complete payment</li>
-                    </ol>
-                </div>
             </div>
         </div>
     );
