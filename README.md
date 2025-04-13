@@ -2,6 +2,12 @@
 
 A decentralized platform revolutionizing zakat (Islamic charity) distribution through blockchain technology, ensuring complete transparency and accountability.
 
+Project link: [https://zakatchain.vercel.app/](https://zakatchain.vercel.app/)
+
+Smart Contract: [https://sepolia.scrollscan.com/address/0x910917365740281babd3a0ff6ecbe8202b7b00dc](https://sepolia.scrollscan.com/address/0x910917365740281babd3a0ff6ecbe8202b7b00dc)
+
+Presentation link: [Canva](https://www.canva.com/design/DAGkbMrb9pk/PO0iB8MHI6s9QXvo2tJvIg/view?utm_content=DAGkbMrb9pk&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=ha037bc3242)
+
 ## 🌟 Features
 
 - **Transparent Tracking**: Real-time monitoring of zakat funds from collection to distribution

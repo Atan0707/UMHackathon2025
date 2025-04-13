@@ -40,13 +40,15 @@ function AnimatedCounter({ end, duration = 2000, label, sublabel, prefix = "", h
       { threshold: 0.1 }
     );
     
-    if (counterRef.current) {
-      observer.observe(counterRef.current);
+    const current = counterRef.current;
+    
+    if (current) {
+      observer.observe(current);
     }
     
     return () => {
-      if (counterRef.current) {
-        observer.unobserve(counterRef.current);
+      if (current) {
+        observer.unobserve(current);
       }
     };
   }, [end, duration, hasAnimated]);
@@ -152,10 +154,10 @@ export default function Home() {
   const [error, setError] = useState<boolean>(false);
   
   // Nisab values
-  const [goldNisabPrice, setGoldNisabPrice] = useState(29740.77);
-  const [silverNisabGrams, setSilverNisabGrams] = useState(595);
-  const [goldPricePerGram, setGoldPricePerGram] = useState(472.12);
-  const [silverPricePerGram, setSilverPricePerGram] = useState(4.91);
+  const [goldNisabPrice] = useState(29740.77);
+  const [silverNisabGrams] = useState(595);
+  const [goldPricePerGram] = useState(472.12);
+  const [silverPricePerGram] = useState(4.91);
 
   const fetchZakatData = async () => {
     try {

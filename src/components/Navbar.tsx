@@ -131,11 +131,11 @@ export default function Navbar() {
             </Link>
             <div className="hidden md:ml-8 md:flex md:space-x-6">
               {[
-                { name: "Home", path: "/" },
-                { name: "Live Ledger", path: "/live-ledger" },
+                { name: "Laman Utama", path: "/" },
+                { name: "Transaksi", path: "/live-ledger" },
                 // { name: "Pay Zakat", path: "/pay-zakat" },
                 { name: "Semak Baki", path: "/semak-baki" },
-                { name: "Zakat Calculator", path: "/calculator" },
+                { name: "Kira Zakat", path: "/calculator" },
                 { name: "Bayar Online", path: "/bayar" }
               ].map((item, index) => (
                 <Link

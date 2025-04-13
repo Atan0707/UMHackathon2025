@@ -181,7 +181,7 @@ export default function Home() {
             setTxHash(tx.hash);
 
             // Wait for the transaction to be mined
-            const receipt = await tx.wait();
+            await tx.wait();
 
             // If we get here, the transaction was successful
             setPaymentComplete(true);
