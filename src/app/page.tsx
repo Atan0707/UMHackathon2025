@@ -72,19 +72,19 @@ function ImageSlider() {
   const slides = [
     {
       id: 1,
-      image: '/images/zakat-slide1.jpg',
+      image: '/images/s3.webp',
       title: 'Rezeki yang Paling Manis',
       subtitle: 'Adalah Rezeki Yang Dikongsi',
     },
     {
       id: 2,
-      image: '/images/zakat-slide2.jpg',
+      image: '/images/s1.png',
       title: 'Zakat Membersihkan Harta',
       subtitle: 'Dan Memberkati Kehidupan',
     },
     {
       id: 3,
-      image: '/images/zakat-slide3.jpg',
+      image: '/images/s2.png',
       title: 'Zakat Menolong Sesama',
       subtitle: 'Meringankan Beban Asnaf',
     },
@@ -225,7 +225,7 @@ export default function Home() {
                 </div>
                 <div className="w-2/5">
                   <Image 
-                    src="/images/online-payment.png" 
+                    src="/images/www.png" 
                     alt="Online Payment" 
                     width={150} 
                     height={150} 
@@ -252,7 +252,7 @@ export default function Home() {
                 </div>
                 <div className="w-2/5">
                   <Image 
-                    src="/images/calculator.png" 
+                    src="/images/calc.png" 
                     alt="Calculator" 
                     width={150} 
                     height={150} 
@@ -279,7 +279,7 @@ export default function Home() {
                 </div>
                 <div className="w-2/5">
                   <Image 
-                    src="/images/distribution.png" 
+                    src="/images/wal.png" 
                     alt="Zakat Distribution" 
                     width={150} 
                     height={150} 
