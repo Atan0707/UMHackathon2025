@@ -8,8 +8,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 // Counter animation component
-function AnimatedCounter({ end, duration = 2000, label, sublabel, prefix = "", hasDivider = true }: { 
-  end: number, 
+function AnimatedCounter({ end, duration = 2000, label, sublabel, prefix = "", hasDivider = true }: {
+  end: number,
   duration?: number,
   label: string,
   sublabel: string,
@@ -39,13 +39,13 @@ function AnimatedCounter({ end, duration = 2000, label, sublabel, prefix = "", h
       },
       { threshold: 0.1 }
     );
-    
+
     const current = counterRef.current;
-    
+
     if (current) {
       observer.observe(current);
     }
-    
+
     return () => {
       if (current) {
         observer.unobserve(current);
@@ -57,7 +57,7 @@ function AnimatedCounter({ end, duration = 2000, label, sublabel, prefix = "", h
     <div ref={counterRef} className="flex flex-col items-center">
       <div className="text-sm text-gray-400 mb-2">{label}</div>
       <div className="text-4xl md:text-5xl font-bold text-white">
-        {prefix}{typeof count === 'number' ? count.toLocaleString('en-MY', {minimumFractionDigits: label === "Gram" ? 0 : 2, maximumFractionDigits: label === "Gram" ? 0 : 2}) : count}
+        {prefix}{typeof count === 'number' ? count.toLocaleString('en-MY', { minimumFractionDigits: label === "Gram" ? 0 : 2, maximumFractionDigits: label === "Gram" ? 0 : 2 }) : count}
       </div>
       <div className="text-xs uppercase tracking-wider text-gray-400 mt-2">{sublabel}</div>
       {hasDivider && (
@@ -70,7 +70,7 @@ function AnimatedCounter({ end, duration = 2000, label, sublabel, prefix = "", h
 // Slider component
 function ImageSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  
+
   const slides = [
     {
       id: 1,
@@ -106,17 +106,17 @@ function ImageSlider() {
 
   return (
     <div className="relative w-full overflow-hidden rounded-xl shadow-xl mb-12 h-[400px] md:h-[500px]">
-      <div 
-        className="flex transition-transform duration-700 ease-in-out h-full" 
+      <div
+        className="flex transition-transform duration-700 ease-in-out h-full"
         style={{ transform: `translateX(-${currentSlide * 100}%)` }}
       >
         {slides.map((slide) => (
           <div key={slide.id} className="min-w-full relative">
             <div className="absolute inset-0 bg-black/40 z-10"></div>
             <div className="relative h-full w-full">
-              <Image 
-                src={slide.image} 
-                alt={slide.title} 
+              <Image
+                src={slide.image}
+                alt={slide.title}
                 fill
                 className="object-cover"
                 priority={slide.id === 1}
@@ -136,9 +136,8 @@ function ImageSlider() {
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full ${
-              currentSlide === index ? 'bg-white' : 'bg-white/40'
-            }`}
+            className={`w-3 h-3 rounded-full ${currentSlide === index ? 'bg-white' : 'bg-white/40'
+              }`}
             aria-label={`Go to slide ${index + 1}`}
           ></button>
         ))}
@@ -152,7 +151,7 @@ export default function Home() {
   const [totalDistributed, setTotalDistributed] = useState<string>("0");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
-  
+
   // Nisab values
   const [goldNisabPrice] = useState(29740.77);
   const [silverNisabGrams] = useState(595);
@@ -208,7 +207,7 @@ export default function Home() {
       <div className="container mx-auto px-4">
         {/* Image Slider */}
         <ImageSlider />
-        
+
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-16">
           {/* Online Payment Card */}
@@ -226,11 +225,11 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="w-2/5">
-                  <Image 
-                    src="/images/online-payment.png" 
-                    alt="Online Payment" 
-                    width={150} 
-                    height={150} 
+                  <Image
+                    src="/images/online-payment.png"
+                    alt="Online Payment"
+                    width={150}
+                    height={150}
                     className="object-contain"
                   />
                 </div>
@@ -253,11 +252,11 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="w-2/5">
-                  <Image 
-                    src="/images/calculator.png" 
-                    alt="Calculator" 
-                    width={150} 
-                    height={150} 
+                  <Image
+                    src="/images/calculator.png"
+                    alt="Calculator"
+                    width={150}
+                    height={150}
                     className="object-contain"
                   />
                 </div>
@@ -280,11 +279,11 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="w-2/5">
-                  <Image 
-                    src="/images/distribution.png" 
-                    alt="Zakat Distribution" 
-                    width={150} 
-                    height={150} 
+                  <Image
+                    src="/images/distribution.png"
+                    alt="Zakat Distribution"
+                    width={150}
+                    height={150}
                     className="object-contain"
                   />
                 </div>
@@ -292,7 +291,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        
+
         {/* Zakat Dashboard - Redesigned */}
         <div className="max-w-4xl mx-auto bg-gray-200 rounded-lg p-8 mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Zakat Dashboard</h2>
@@ -327,48 +326,48 @@ export default function Home() {
             </div>
           </div>
         </div>
-        
+
         {/* Nisab Values Section */}
         <div className="w-full bg-black py-14 mt-20">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center text-white mb-3">NISAB SEMASA</h2>
             <div className="w-16 h-1 bg-emerald-500 mx-auto mb-14"></div>
-            
+
             <div className="max-w-5xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
                 <div className="flex flex-col items-center relative">
-                  <AnimatedCounter 
-                    end={goldNisabPrice} 
-                    label="RM" 
-                    sublabel="HARGA EMAS (NISAB)" 
+                  <AnimatedCounter
+                    end={goldNisabPrice}
+                    label="RM"
+                    sublabel="HARGA EMAS (NISAB)"
                   />
                 </div>
-                
+
                 <div className="flex flex-col items-center relative">
-                  <AnimatedCounter 
-                    end={silverNisabGrams} 
-                    label="Gram" 
-                    sublabel="NISAB PERAK" 
+                  <AnimatedCounter
+                    end={silverNisabGrams}
+                    label="Gram"
+                    sublabel="NISAB PERAK"
                   />
                 </div>
-                
+
                 <div className="flex flex-col items-center relative">
-                  <AnimatedCounter 
-                    end={goldPricePerGram} 
-                    label="RM" 
-                    sublabel="HARGA EMAS PER GRAM" 
+                  <AnimatedCounter
+                    end={goldPricePerGram}
+                    label="RM"
+                    sublabel="HARGA EMAS PER GRAM"
                   />
                 </div>
-                
+
                 <div className="flex flex-col items-center relative">
-                  <AnimatedCounter 
-                    end={silverPricePerGram} 
-                    label="RM" 
+                  <AnimatedCounter
+                    end={silverPricePerGram}
+                    label="RM"
                     sublabel="HARGA PERAK PER GRAM"
                     hasDivider={false}
                   />
                 </div>
-                
+
                 {/* Dividers for larger screens */}
                 <div className="hidden md:block absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2 h-28 w-px bg-white/20"></div>
                 <div className="hidden md:block absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-28 w-px bg-white/20"></div>
