@@ -18,10 +18,21 @@ contract ZakatSystem is ERC20, Ownable, ReentrancyGuard {
         uint256 tokenBalance;
     }
 
+    // Item struct to track allowed items
+    struct AllowedItem {
+        string name;
+        bool isAllowed;
+    }
+
     // Maps Malaysian ID to Recipient
     mapping(string => Recipient) public recipients;
     // Maps ShopOwner ID to ShopOwner
     mapping(string => ShopOwner) public shopOwners;
+    // Maps item code to AllowedItem
+    mapping(string => AllowedItem) public allowedItems;
+
+    // Array to track all allowed item codes
+    string[] public itemCodes;
 
     // Array of all recipient IDs for iteration
     string[] public recipientIds;
@@ -31,22 +42,113 @@ contract ZakatSystem is ERC20, Ownable, ReentrancyGuard {
     bool public distributionCompleted;
     // Track total amount distributed
     uint256 public totalDistributedAmount;
+    // Track total zakat collected
+    uint256 public totalZakatCollected;
 
     event RecipientAdded(string id, string name);
     event ShopOwnerAdded(string id, string name);
     event ZakatDistributed(uint256 totalAmount, uint256 recipientCount);
     event TokenSpent(string recipientId, string shopOwnerId, uint256 amount);
     event TokenClaimed(string id, uint256 amount);
+    event ItemAdded(string itemCode, string name);
+    event ItemRemoved(string itemCode);
+    event ItemPurchased(string recipientId, string itemCode);
 
     constructor() ERC20("ZakatToken", "ZKT") Ownable(msg.sender) {
         distributionCompleted = false;
         totalDistributedAmount = 0;
+        totalZakatCollected = 0;
     }
 
     // Called by your API when someone pays Zakat
     function mintZakat(uint256 amount) external onlyOwner {
         require(!distributionCompleted, "Zakat collection period has ended");
         _mint(address(this), amount);
+        totalZakatCollected += amount;
+    }
+
+    // Add an allowed item
+    function addAllowedItem(
+        string memory itemCode,
+        string memory name
+    ) external onlyOwner {
+        require(!allowedItems[itemCode].isAllowed, "Item already allowed");
+
+        allowedItems[itemCode] = AllowedItem({name: name, isAllowed: true});
+
+        itemCodes.push(itemCode);
+
+        emit ItemAdded(itemCode, name);
+    }
+
+    // Remove an allowed item
+    function removeAllowedItem(string memory itemCode) external onlyOwner {
+        require(allowedItems[itemCode].isAllowed, "Item not found");
+
+        allowedItems[itemCode].isAllowed = false;
+
+        emit ItemRemoved(itemCode);
+    }
+
+    // Check if multiple items are allowed (returns false if any item is not allowed)
+    function areItemsAllowed(
+        string[] memory itemCodesToCheck
+    ) public view returns (bool) {
+        for (uint i = 0; i < itemCodesToCheck.length; i++) {
+            if (!allowedItems[itemCodesToCheck[i]].isAllowed) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Check each item individually and return an array of results
+    function checkItemsAllowed(
+        string[] memory itemCodesToCheck
+    ) public view returns (bool[] memory) {
+        bool[] memory results = new bool[](itemCodesToCheck.length);
+
+        for (uint i = 0; i < itemCodesToCheck.length; i++) {
+            results[i] = allowedItems[itemCodesToCheck[i]].isAllowed;
+        }
+
+        return results;
+    }
+
+    // Spend tokens for specific items
+    function spendTokensForItems(
+        string memory recipientId,
+        string memory shopOwnerId,
+        uint256 amount,
+        string[] memory itemCodesToCheck
+    ) external onlyOwner nonReentrant {
+        require(
+            recipients[recipientId].isRegistered,
+            "Recipient not registered"
+        );
+        require(
+            shopOwners[shopOwnerId].isRegistered,
+            "Shop owner not registered"
+        );
+        require(
+            recipients[recipientId].tokenAmount >= amount,
+            "Insufficient token balance"
+        );
+
+        // Check if all items are allowed
+        for (uint i = 0; i < itemCodesToCheck.length; i++) {
+            require(
+                allowedItems[itemCodesToCheck[i]].isAllowed,
+                "One or more items are not allowed for purchase"
+            );
+
+            emit ItemPurchased(recipientId, itemCodesToCheck[i]);
+        }
+
+        recipients[recipientId].tokenAmount -= amount;
+        shopOwners[shopOwnerId].tokenBalance += amount;
+
+        emit TokenSpent(recipientId, shopOwnerId, amount);
     }
 
     // Register a recipient
@@ -105,31 +207,6 @@ contract ZakatSystem is ERC20, Ownable, ReentrancyGuard {
         distributionCompleted = true;
 
         emit ZakatDistributed(contractBalance, recipientIds.length);
-    }
-
-    // Spend tokens at a store
-    function spendTokens(
-        string memory recipientId,
-        string memory shopOwnerId,
-        uint256 amount
-    ) external onlyOwner nonReentrant {
-        require(
-            recipients[recipientId].isRegistered,
-            "Recipient not registered"
-        );
-        require(
-            shopOwners[shopOwnerId].isRegistered,
-            "Shop owner not registered"
-        );
-        require(
-            recipients[recipientId].tokenAmount >= amount,
-            "Insufficient token balance"
-        );
-
-        recipients[recipientId].tokenAmount -= amount;
-        shopOwners[shopOwnerId].tokenBalance += amount;
-
-        emit TokenSpent(recipientId, shopOwnerId, amount);
     }
 
     // ShopOwner claims MYR by burning tokens
@@ -193,6 +270,8 @@ contract ZakatSystem is ERC20, Ownable, ReentrancyGuard {
         require(distributionCompleted, "Previous distribution not completed");
         distributionCompleted = false;
         totalDistributedAmount = 0;
+        // Reset totalZakatCollected to 0 for the new period
+        totalZakatCollected = 0;
     }
 
     // Get total number of registered recipients
@@ -205,13 +284,23 @@ contract ZakatSystem is ERC20, Ownable, ReentrancyGuard {
         return shopOwnerIds.length;
     }
 
+    // Get total number of allowed items
+    function getTotalAllowedItems() external view returns (uint256) {
+        return itemCodes.length;
+    }
+
     // Get total amount of tokens initially distributed
     function getTotalDistributedTokens() external view returns (uint256) {
         return totalDistributedAmount;
     }
 
+    // Get total zakat collected in this period
+    function getTotalZakatCollected() external view returns (uint256) {
+        return totalZakatCollected;
+    }
+
     // Get current total amount held by recipients
-    function getCurrentRecipientTokens() external view returns (uint256) {
+    function getCurrentRecipientTokens() public view returns (uint256) {
         uint256 total = 0;
         for (uint i = 0; i < recipientIds.length; i++) {
             string memory id = recipientIds[i];
@@ -221,7 +310,7 @@ contract ZakatSystem is ERC20, Ownable, ReentrancyGuard {
     }
 
     // Get total amount of tokens held by shop owners
-    function getTotalShopOwnerTokens() external view returns (uint256) {
+    function getTotalShopOwnerTokens() public view returns (uint256) {
         uint256 total = 0;
         for (uint i = 0; i < shopOwnerIds.length; i++) {
             string memory id = shopOwnerIds[i];
@@ -235,7 +324,9 @@ contract ZakatSystem is ERC20, Ownable, ReentrancyGuard {
         if (distributionCompleted) {
             return 0;
         } else {
-            return balanceOf(address(this));
+            uint256 totalHeldByUsers = getCurrentRecipientTokens() +
+                getTotalShopOwnerTokens();
+            return totalSupply() - totalHeldByUsers;
         }
     }
 }

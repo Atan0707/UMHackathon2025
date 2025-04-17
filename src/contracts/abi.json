@@ -3,6 +3,24 @@
         "inputs": [
             {
                 "internalType": "string",
+                "name": "itemCode",
+                "type": "string"
+            },
+            {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            }
+        ],
+        "name": "addAllowedItem",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
                 "name": "id",
                 "type": "string"
             },
@@ -32,30 +50,6 @@
         ],
         "name": "addShopOwner",
         "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "address",
-                "name": "spender",
-                "type": "address"
-            },
-            {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-            }
-        ],
-        "name": "approve",
-        "outputs": [
-            {
-                "internalType": "bool",
-                "name": "",
-                "type": "bool"
-            }
-        ],
         "stateMutability": "nonpayable",
         "type": "function"
     },
@@ -196,19 +190,6 @@
     {
         "inputs": [
             {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-            }
-        ],
-        "name": "mintZakat",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "address",
                 "name": "owner",
                 "type": "address"
@@ -254,6 +235,94 @@
         "type": "event"
     },
     {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "spender",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "approve",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "itemCode",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            }
+        ],
+        "name": "ItemAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "recipientId",
+                "type": "string"
+            },
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "itemCode",
+                "type": "string"
+            }
+        ],
+        "name": "ItemPurchased",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "itemCode",
+                "type": "string"
+            }
+        ],
+        "name": "ItemRemoved",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "mintZakat",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "anonymous": false,
         "inputs": [
             {
@@ -290,6 +359,19 @@
         ],
         "name": "RecipientAdded",
         "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "itemCode",
+                "type": "string"
+            }
+        ],
+        "name": "removeAllowedItem",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
     },
     {
         "inputs": [],
@@ -340,9 +422,14 @@
                 "internalType": "uint256",
                 "name": "amount",
                 "type": "uint256"
+            },
+            {
+                "internalType": "string[]",
+                "name": "itemCodesToCheck",
+                "type": "string[]"
             }
         ],
-        "name": "spendTokens",
+        "name": "spendTokensForItems",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
@@ -528,6 +615,49 @@
     {
         "inputs": [
             {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "name": "allowedItems",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "internalType": "bool",
+                "name": "isAllowed",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string[]",
+                "name": "itemCodesToCheck",
+                "type": "string[]"
+            }
+        ],
+        "name": "areItemsAllowed",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "internalType": "address",
                 "name": "account",
                 "type": "address"
@@ -539,6 +669,25 @@
                 "internalType": "uint256",
                 "name": "",
                 "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string[]",
+                "name": "itemCodesToCheck",
+                "type": "string[]"
+            }
+        ],
+        "name": "checkItemsAllowed",
+        "outputs": [
+            {
+                "internalType": "bool[]",
+                "name": "",
+                "type": "bool[]"
             }
         ],
         "stateMutability": "view",
@@ -623,6 +772,19 @@
     },
     {
         "inputs": [],
+        "name": "getTotalAllowedItems",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "getTotalDistributedTokens",
         "outputs": [
             {
@@ -675,12 +837,44 @@
     },
     {
         "inputs": [],
+        "name": "getTotalZakatCollected",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "getUndistributedTokens",
         "outputs": [
             {
                 "internalType": "uint256",
                 "name": "",
                 "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "itemCodes",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
             }
         ],
         "stateMutability": "view",
@@ -837,6 +1031,19 @@
     {
         "inputs": [],
         "name": "totalSupply",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "totalZakatCollected",
         "outputs": [
             {
                 "internalType": "uint256",
