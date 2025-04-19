@@ -156,14 +156,14 @@ export default function LiveLedger() {
       const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, provider);
 
       // Get distributed and undistributed amounts
-      const distributed = await contract.getTotalDistributedTokens();
+
+      const distributedd = await contract.getTotalDistributedTokens();
       const undistributed = await contract.getUndistributedTokens();
       const recipientCount = await contract.getTotalRecipients();
       const shopOwnerCount = await contract.getTotalShopOwners();
 
-      // Calculate total collected (distributed + undistributed)
-      const collected = distributed + undistributed;
-
+      const collected = await contract.totalZakatCollected();
+      const distributed = collected - undistributed
       // Format values
       const formattedCollected = parseFloat(ethers.formatUnits(collected, 4)).toLocaleString('en-MY',
         { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -251,7 +251,7 @@ export default function LiveLedger() {
               );
 
               if (shopOwner) {
-                fromDisplay = shopOwner.name;   
+                fromDisplay = shopOwner.name;
               } else if (fromDisplay === CONTRACT_ADDRESS) {
                 fromDisplay = 'ZakatContract';
               } else {
@@ -623,9 +623,9 @@ export default function LiveLedger() {
                       </td>
                       <td className="py-3 px-4">
                         <span className={`inline-block px-2 py-0.5 text-xs rounded-sm ${tx.type === 'Pengagihan Zakat' ? 'text-green-300' :
-                            tx.type === 'Burned' ? 'text-red-300' :
-                              tx.type === 'Pembelian' ? 'text-purple-300' :
-                                'text-blue-300'
+                          tx.type === 'Burned' ? 'text-red-300' :
+                            tx.type === 'Pembelian' ? 'text-purple-300' :
+                              'text-blue-300'
                           }`}>
                           {tx.type === 'Burned' ? 'Tukar Ke Ringgit' : tx.type}
                         </span>

@@ -6,20 +6,9 @@ import { useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
 import { CONTRACT_ADDRESS, RPC_URL } from '@/utils/config';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import contractAbi from '@/contracts/abi.json';
 
-// ABI for the ZakatSystem contract (only the functions we need)
-const CONTRACT_ABI = [
-  "function balanceOf(address account) view returns (uint256)",
-  "function distributeZakat() external",
-  "function owner() view returns (address)",
-  "function distributionCompleted() view returns (bool)",
-  "function getTotalRecipients() view returns (uint256)",
-  "function getTotalShopOwners() view returns (uint256)",
-  "function getUndistributedTokens() view returns (uint256)",
-  "function getTotalDistributedTokens() view returns (uint256)",
-  "function addRecipient(string memory id, string memory name) external",
-  "function addShopOwner(string memory id, string memory name) external"
-];
+
 
 const AgihZakat = () => {
   const { address: currentUserAddress } = useAppKitAccount();
@@ -53,7 +42,7 @@ const AgihZakat = () => {
   const checkOwnership = useCallback(async () => {
     try {
       const provider = new ethers.JsonRpcProvider(RPC_URL);
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, provider);
       const contractOwner = await contract.owner();
       setIsOwner(contractOwner.toLowerCase() === currentUserAddress?.toLowerCase());
       setLoading(false);
@@ -66,12 +55,12 @@ const AgihZakat = () => {
   const getContractStats = useCallback(async () => {
     try {
       const provider = new ethers.JsonRpcProvider(RPC_URL);
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, provider);
 
       const [totalRecipients, totalShopOwners, undistributedTokens, isDistributed, totalDistributed] = await Promise.all([
         contract.getTotalRecipients(),
         contract.getTotalShopOwners(),
-        contract.getUndistributedTokens(),
+        contract.totalZakatCollected(),
         contract.distributionCompleted(),
         contract.getTotalDistributedTokens()
       ]);
@@ -110,7 +99,7 @@ const AgihZakat = () => {
       await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
 
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, signer);
 
       // Dismiss previous toast before showing new one
       toast.dismiss(connectToast);
@@ -159,7 +148,7 @@ const AgihZakat = () => {
       await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
 
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, signer);
 
       // Dismiss previous toast before showing new one
       toast.dismiss(connectToast);
@@ -212,7 +201,7 @@ const AgihZakat = () => {
       await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
 
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, signer);
 
       // Dismiss previous toast before showing new one
       toast.dismiss(connectToast);

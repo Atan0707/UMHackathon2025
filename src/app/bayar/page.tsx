@@ -896,15 +896,9 @@ export default function BayarPage() {
             </div>
             
             <div class="receipt-info">
-<<<<<<< HEAD
               <div className="receipt-info-block">
                 <div className="receipt-label">No. Resit</div>
                 <div className="receipt-value">${receiptId}</div>
-=======
-              <div class="receipt-info-block">
-                <div class="receipt-label">No. Resit</div>
-                <div class="receipt-value">${currentReceiptId}</div>
->>>>>>> 8871c60 (fix receipt)
                 
                 <div style="margin-top: 15px; display: flex;">
                   <div style="margin-right: 30px;">

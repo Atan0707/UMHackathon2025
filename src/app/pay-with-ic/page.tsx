@@ -38,7 +38,7 @@ const productData: { [key: string]: Product } = {
     'A02': { id: 'A02', name: 'Chicken', price: 14 },
     'A03': { id: 'A03', name: 'Rice', price: 30 },
     'A04': { id: 'A04', name: 'Meat', price: 20 },
-    'A05': { id: 'A05', name: 'Alcohol', price: 20 },
+    'A06': { id: 'A06', name: 'Alcohol', price: 20 },
 };
 
 // Blockchain configuration
