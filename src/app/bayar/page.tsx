@@ -24,9 +24,26 @@ export default function BayarPage() {
   const [txHash, setTxHash] = useState('');
   const [txStatus, setTxStatus] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    if (name === 'jumlah') {
+      // Clear any previous error
+      setPaymentError('');
+      
+      // Validate amount for 'jumlah' field
+      if (value && !isNaN(parseFloat(value))) {
+        const amount = parseFloat(value);
+        if (amount === 0) {
+          setPaymentError('Jumlah minimum bayaran adalah RM1.00');
+        } else if (amount < 1) {
+          setPaymentError('Jumlah minimum bayaran adalah RM1.00');
+        }
+      }
+    }
+    
     setFormData({
       ...formData,
       [name]: value
@@ -34,6 +51,15 @@ export default function BayarPage() {
   };
 
   const handleNext = () => {
+    // Check if payment amount is valid before proceeding
+    if (step === 1) {
+      const amount = parseFloat(formData.jumlah);
+      if (!formData.jumlah || isNaN(amount) || amount < 1) {
+        setPaymentError('Jumlah minimum bayaran adalah RM1.00');
+        return;
+      }
+    }
+    
     if (step === 3) {
       const bankWindow = window.open('', '_blank', 'width=500,height=600');
       if (bankWindow) {
@@ -98,6 +124,7 @@ export default function BayarPage() {
                 padding: 15px;
                 border-radius: 4px;
                 margin: 20px 0;
+                cursor: pointer;
               }
               .button-container {
                 display: flex;
@@ -127,6 +154,48 @@ export default function BayarPage() {
               }
               .radio-dot {
                 margin-right: 10px;
+                display: inline-block;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                border: 2px solid #007bff;
+                position: relative;
+                cursor: pointer;
+              }
+              .radio-dot.checked:after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background-color: #007bff;
+              }
+              .checkbox {
+                display: inline-block;
+                width: 18px;
+                height: 18px;
+                border: 2px solid #555;
+                margin-right: 5px;
+                position: relative;
+                cursor: pointer;
+                border-radius: 3px;
+              }
+              .checkbox.checked:after {
+                content: '✓';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: white;
+                font-size: 12px;
+                font-weight: bold;
+              }
+              .checkbox.checked {
+                background-color: #007bff;
+                border-color: #007bff;
               }
             </style>
           </head>
@@ -161,23 +230,59 @@ export default function BayarPage() {
                   </div>
                   <div class="detail-row">
                     <span>TAC</span>
-                    <span>☑</span>
+                    <span><div id="tacCheckbox" class="checkbox checked" onclick="this.classList.toggle('checked')"></div></span>
                   </div>
                 </div>
-                <div class="verification-box">
+                <div class="verification-box" id="verificationBox" onclick="toggleVerification()">
                   <div style="display: flex; align-items: center;">
-                    <span class="radio-dot">⚪</span>
+                    <span id="verificationRadio" class="radio-dot checked"></span>
                     <span>Secure Verification ℹ️</span>
                   </div>
                   <p>You will receive a notification on your phone to authorise this transaction on the new Maybank app.</p>
                 </div>
                 <div class="button-container">
-                  <button class="confirm-btn" onclick="window.close(); window.opener.document.getElementById('confirmPayment').click();">Confirm</button>
+                  <button class="confirm-btn" id="confirmBtn" onclick="confirmPayment()">Confirm</button>
                   <span style="margin-top: 10px;">or</span>
                   <button class="back-btn" onclick="window.close();">Go back</button>
                 </div>
               </div>
             </div>
+            <script>
+              function toggleVerification() {
+                const radio = document.getElementById('verificationRadio');
+                radio.classList.toggle('checked');
+                checkConfirmButton();
+              }
+              
+              function checkConfirmButton() {
+                const verificationChecked = document.getElementById('verificationRadio').classList.contains('checked');
+                const tacChecked = document.getElementById('tacCheckbox').classList.contains('checked');
+                const confirmBtn = document.getElementById('confirmBtn');
+                
+                if (verificationChecked && tacChecked) {
+                  confirmBtn.disabled = false;
+                  confirmBtn.style.opacity = '1';
+                  confirmBtn.style.cursor = 'pointer';
+                } else {
+                  confirmBtn.disabled = true;
+                  confirmBtn.style.opacity = '0.5';
+                  confirmBtn.style.cursor = 'not-allowed';
+                }
+              }
+              
+              function confirmPayment() {
+                const verificationChecked = document.getElementById('verificationRadio').classList.contains('checked');
+                const tacChecked = document.getElementById('tacCheckbox').classList.contains('checked');
+                
+                if (verificationChecked && tacChecked) {
+                  window.close();
+                  window.opener.document.getElementById('confirmPayment').click();
+                }
+              }
+              
+              // Initialize button state
+              checkConfirmButton();
+            </script>
           </body>
           </html>
         `);
@@ -437,10 +542,14 @@ export default function BayarPage() {
                   name="jumlah"
                   value={formData.jumlah}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border font-bold text-gray-500 border-gray-300 rounded-md focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                  className={`w-full px-3 py-2 border font-bold ${paymentError ? 'border-red-500' : 'border-gray-300'} text-gray-500 rounded-md focus:outline-none focus:ring-emerald-500 focus:border-emerald-500`}
                   placeholder="0"
                 />
-                <p className="mt-1 text-xs text-gray-500">* Minimum RM10.00, Maximum RM100,000.00 (RM) untuk satu transaksi</p>
+                {paymentError ? (
+                  <p className="mt-1 text-xs text-red-500">{paymentError}</p>
+                ) : (
+                  <p className="mt-1 text-xs text-gray-500">* Minimum RM1.00, Maximum RM100,000.00 (RM) untuk satu transaksi</p>
+                )}
               </div>
             </div>
           </>
