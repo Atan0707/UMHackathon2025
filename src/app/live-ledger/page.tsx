@@ -374,7 +374,7 @@ export default function LiveLedger() {
   useEffect(() => {
     refetch();
     fetchZakatData();
-    
+
     // Set up interval to refresh data every 60 seconds
     const interval = setInterval(() => {
       refetch();
@@ -382,7 +382,7 @@ export default function LiveLedger() {
       // Trigger reanimation of counters by forcing a key change
       setAnimationKey(prev => prev + 1);
     }, 60000);
-    
+
     // Clean up interval on unmount
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -396,7 +396,7 @@ export default function LiveLedger() {
       <div className="container mx-auto px-4">
         {/* Zakat Dashboard */}
         <div className="max-w-4xl mx-auto bg-gray-900/50 backdrop-blur-sm rounded-xl p-8 mb-10 shadow-lg">
-          <motion.div 
+          <motion.div
             className="flex items-center justify-center mb-8"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -409,7 +409,7 @@ export default function LiveLedger() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 md:divide-x md:divide-gray-700/30">
             {/* Collected Zakat */}
-            <motion.div 
+            <motion.div
               className="bg-transparent text-center px-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -428,17 +428,17 @@ export default function LiveLedger() {
               ) : errorZakat ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <AnimatedCounter 
-                  prefix="RM" 
+                <AnimatedCounter
+                  prefix="RM"
                   value={totalCollected}
                   key={`collected-${animationKey}`}
-                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center" 
+                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center"
                 />
               )}
             </motion.div>
 
             {/* Distributed Zakat */}
-            <motion.div 
+            <motion.div
               className="bg-transparent text-center px-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -457,17 +457,17 @@ export default function LiveLedger() {
               ) : errorZakat ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <AnimatedCounter 
-                  prefix="RM" 
+                <AnimatedCounter
+                  prefix="RM"
                   value={totalDistributed}
                   key={`distributed-${animationKey}`}
-                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center" 
+                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center"
                 />
               )}
             </motion.div>
-            
+
             {/* Burned Tokens (Redeemed by Merchants) */}
-            <motion.div 
+            <motion.div
               className="bg-transparent text-center px-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -478,7 +478,7 @@ export default function LiveLedger() {
                   <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
                 </svg>
               </div>
-              <div className="text-gray-400 text-xs uppercase tracking-wider mb-3">Jumlah Token Dituntut</div>
+              <div className="text-gray-400 text-xs uppercase tracking-wider mb-3">Jumlah wang ditebus</div>
               {isLoading ? (
                 <div className="flex items-center justify-center h-12">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
@@ -486,17 +486,17 @@ export default function LiveLedger() {
               ) : error ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <AnimatedCounter 
-                  prefix="RM" 
+                <AnimatedCounter
+                  prefix="RM"
                   value={totalBurned}
                   key={`burned-${animationKey}`}
-                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center" 
+                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center"
                 />
               )}
             </motion.div>
 
             {/* Total Recipients */}
-            <motion.div 
+            <motion.div
               className="bg-transparent text-center px-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -515,17 +515,17 @@ export default function LiveLedger() {
               ) : errorZakat ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <AnimatedCounter 
-                  value={totalRecipients} 
+                <AnimatedCounter
+                  value={totalRecipients}
                   prefix=""
                   key={`recipients-${animationKey}`}
-                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center" 
+                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center"
                 />
               )}
             </motion.div>
 
             {/* Total Shop Owners */}
-            <motion.div 
+            <motion.div
               className="bg-transparent text-center px-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -536,7 +536,7 @@ export default function LiveLedger() {
                   <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
                 </svg>
               </div>
-              <div className="text-gray-400 text-xs uppercase tracking-wider mb-3">Kedai<br/> Berdaftar</div>
+              <div className="text-gray-400 text-xs uppercase tracking-wider mb-3">Kedai<br /> Berdaftar</div>
               {isLoadingZakat ? (
                 <div className="flex items-center justify-center h-12">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
@@ -544,18 +544,18 @@ export default function LiveLedger() {
               ) : errorZakat ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <AnimatedCounter 
-                  value={totalShopOwners} 
+                <AnimatedCounter
+                  value={totalShopOwners}
                   prefix=""
                   key={`shopowners-${animationKey}`}
-                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center" 
+                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center"
                 />
               )}
             </motion.div>
           </div>
         </div>
 
-        <motion.h1 
+        <motion.h1
           className="text-lg font-medium text-gray-100 mb-4 max-w-4xl mx-auto uppercase tracking-wider"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -622,12 +622,11 @@ export default function LiveLedger() {
                         {formatDate(tx.dateTime)}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-block px-2 py-0.5 text-xs rounded-sm ${
-                          tx.type === 'Pengagihan Zakat' ? 'text-green-300' :
-                          tx.type === 'Burned' ? 'text-red-300' :
-                          tx.type === 'Pembelian' ? 'text-purple-300' :
-                          'text-blue-300'
-                        }`}>
+                        <span className={`inline-block px-2 py-0.5 text-xs rounded-sm ${tx.type === 'Pengagihan Zakat' ? 'text-green-300' :
+                            tx.type === 'Burned' ? 'text-red-300' :
+                              tx.type === 'Pembelian' ? 'text-purple-300' :
+                                'text-blue-300'
+                          }`}>
                           {tx.type === 'Burned' ? 'Tukar Ke Ringgit' : tx.type}
                         </span>
                       </td>

@@ -32,6 +32,7 @@ export default function BayarPage() {
   const [paymentError, setPaymentError] = useState('');
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
+  const [emailStatus, setEmailStatus] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -303,7 +304,7 @@ export default function BayarPage() {
     try {
       setIsProcessing(true);
       setTxStatus('Processing...');
-      
+
       // Generate a receipt ID at the beginning of processing
       const generatedReceiptId = `ZKT-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
       setReceiptId(generatedReceiptId);
@@ -338,18 +339,18 @@ export default function BayarPage() {
 
       if (receipt.status === 1) {
         setTxStatus('Success');
-        
+
         // After successful transaction, mint the NFT receipt
         try {
           // Set NFT status
           setNftStatus('Minting NFT receipt...');
-          
+
           // Create the ZakatNFT contract instance
           const nftContract = new ethers.Contract(ZAKAT_NFT_CONTRACT_ADDRESS, zakatNFTAbi, wallet);
-          
+
           // Define token URI - in a real app, this would be an IPFS link to metadata
           const tokenURI = `https://plum-tough-mongoose-147.mypinata.cloud/ipfs/bafybeiazkn4okxee2bnwvbcprhsk4rcujerkc5p2p7zkf3s5uj24b7rqia`;
-          
+
           // Mint the NFT receipt
           const nftTx = await nftContract.mintReceiptNFT(
             generatedReceiptId,
@@ -362,22 +363,50 @@ export default function BayarPage() {
             tx.hash,
             tokenURI
           );
-          
+
           // Set NFT transaction hash
           setNftTxHash(nftTx.hash);
-          
+
           // Wait for the NFT transaction to be mined
           await nftTx.wait();
-          
+
           // Update NFT status
           setNftStatus('NFT minted successfully');
           console.log('NFT minted successfully');
+
+          // Send email notification with receipt
+          try {
+            const emailResponse = await fetch('/api/send-email', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                email: formData.email || 'user@example.com',
+                receiptId: generatedReceiptId,
+                name: formData.nama || 'MUHAMMAD HAZRIL FAHMI',
+                amount: formData.jumlah || '0',
+                zakatType: formData.jenisZakat
+              }),
+            });
+
+            if (emailResponse.ok) {
+              // Set notification state to show to user
+              setEmailStatus('Email resit telah berjaya dihantar ke alamat email anda');
+            } else {
+              setEmailStatus('Email resit tidak dapat dihantar, tetapi anda masih boleh melihat resit anda di sini');
+            }
+          } catch (emailError) {
+            console.error('Error sending email:', emailError);
+            setEmailStatus('Email resit tidak dapat dihantar, tetapi anda masih boleh melihat resit anda di sini');
+          }
+
         } catch (nftError) {
           console.error('Error minting NFT:', nftError);
           setNftStatus('Failed to mint NFT');
           // Continue with success status even if NFT minting fails
         }
-        
+
         setStep(4);
       } else {
         setTxStatus('Failed');
@@ -1156,7 +1185,7 @@ export default function BayarPage() {
               </svg>
               Resit telah dihantar ke alamat email anda
             </p>
-            
+
             <div className="bg-gray-50 rounded-lg p-6 max-w-md mx-auto border border-gray-200">
               <h3 className="font-semibold mb-4 text-gray-800">Butiran Pembayaran</h3>
               <div className="space-y-2 text-left">
@@ -1246,7 +1275,7 @@ export default function BayarPage() {
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Transaksi Sedang Diproses</h3>
                 <p className="text-gray-600 text-center mb-2">Pembayaran zakat anda sedang direkodkan di blockchain</p>
-                
+
                 {/* NFT minting message */}
                 <div className="flex items-center bg-purple-50 text-purple-800 text-sm px-4 py-2 rounded-md mt-2 mb-3">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1257,7 +1286,7 @@ export default function BayarPage() {
                     {!nftStatus && <span className="font-medium">{formData.email || 'email anda'}</span>}
                   </span>
                 </div>
-                
+
                 {txHash && (
                   <div className="text-xs text-gray-500 mt-2 bg-gray-50 p-3 rounded w-full">
                     <p className="font-medium mb-1">Transaction Hash:</p>
@@ -1274,7 +1303,7 @@ export default function BayarPage() {
                     </div>
                   </div>
                 )}
-                
+
                 {nftTxHash && (
                   <div className="text-xs text-gray-500 mt-2 bg-purple-50 p-3 rounded w-full">
                     <p className="font-medium mb-1">NFT Transaction:</p>

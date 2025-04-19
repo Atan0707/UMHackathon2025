@@ -172,13 +172,13 @@ export default function Withdraw() {
         hour: '2-digit',
         minute: '2-digit'
       });
-      
+
       // Generate a unique reference number
       const reference = `ZKT-${Date.now().toString().slice(-8)}-${Math.floor(Math.random() * 1000)}`;
-      
+
       setReceiptData({
         merchantId,
-        merchantName: merchantData.name,
+        merchantName: merchantData?.name || '',
         amount: withdrawAmount,
         date: currentDate,
         txHash: tx.hash,
@@ -543,7 +543,7 @@ export default function Withdraw() {
                   </div>
                   <p className="text-sm text-gray-500">Withdrawal Confirmation</p>
                 </div>
-                
+
                 <div className="mb-6">
                   <div className="flex justify-between mb-2">
                     <span className="text-gray-600">Merchant ID:</span>
@@ -562,7 +562,7 @@ export default function Withdraw() {
                     <span className="font-medium">{receiptData.date}</span>
                   </div>
                 </div>
-                
+
                 <div className="bg-gray-100 p-4 rounded-lg mb-6">
                   <div className="flex justify-between mb-2">
                     <span className="text-gray-600">Amount Withdrawn:</span>
@@ -573,16 +573,16 @@ export default function Withdraw() {
                     <span className="text-emerald-600 font-medium">Completed</span>
                   </div>
                 </div>
-                
+
                 <div className="mb-6">
                   <p className="text-sm text-gray-600 mb-2">Transaction Hash:</p>
                   <p className="text-xs bg-gray-100 p-2 rounded overflow-hidden break-all">
                     {receiptData.txHash}
                   </p>
                   <div className="mt-1 text-xs">
-                    <a 
+                    <a
                       href={`https://sepolia.scrollscan.com/tx/${receiptData.txHash}`}
-                      target="_blank" 
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline no-print"
                     >
@@ -590,14 +590,14 @@ export default function Withdraw() {
                     </a>
                   </div>
                 </div>
-                
+
                 <div className="border-t border-gray-200 pt-4 text-sm text-gray-500">
                   <p>Funds will be credited to your bank account within 7 working days.</p>
                   <p className="mt-2">For any inquiries, please contact support@zkt.finance</p>
                 </div>
-                
-                <button 
-                  onClick={printReceipt} 
+
+                <button
+                  onClick={printReceipt}
                   className="mt-6 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors no-print flex items-center justify-center"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
