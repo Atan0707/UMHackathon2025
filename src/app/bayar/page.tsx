@@ -1214,15 +1214,23 @@ export default function BayarPage() {
                 )}
               </div>
             </div>
-            <button
-              className="mt-6 px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center justify-center"
-              onClick={downloadReceipt}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Muat Turun Resit
-            </button>
+            <div className="mt-6 flex justify-center space-x-4">
+              <button
+                className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center justify-center"
+                onClick={downloadReceipt}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Muat Turun Resit
+              </button>
+              <Link href="/" className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                KEMBALI KE LAMAN UTAMA
+              </Link>
+            </div>
           </div>
         )}
 
@@ -1479,18 +1487,27 @@ export default function BayarPage() {
                     <p className="text-sm text-gray-500">© {new Date().getFullYear()} ZakatPay™ - Sistem Pembayaran Zakat Digital</p>
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-6 flex justify-center">
-                <button
-                  onClick={handlePrintReceipt}
-                  className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center justify-center shadow-md transition-all duration-200 hover:shadow-lg"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2zm2-4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                  </svg>
-                  Cetak Resit
-                </button>
+                <div className="mt-6 flex justify-center space-x-4">
+                  <button
+                    onClick={handlePrintReceipt}
+                    className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center justify-center shadow-md transition-all duration-200 hover:shadow-lg"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2zm2-4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Cetak Resit
+                  </button>
+                  <button
+                    onClick={() => setIsReceiptModalOpen(false)}
+                    className="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 flex items-center justify-center shadow-md transition-all duration-200 hover:shadow-lg"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Tutup
+                  </button>
+                </div>
               </div>
             </div>
           </div>
