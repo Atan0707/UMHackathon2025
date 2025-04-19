@@ -12,6 +12,16 @@ import { CONTRACT_ADDRESS, RPC_URL } from "@/utils/config";
 // ABI for owner check only
 const CONTRACT_ABI = ["function owner() view returns (address)"];
 
+// Navigation configuration
+const NAV_ITEMS = [
+  // { name: "Laman Utama", path: "/" },
+  { name: "Transaksi", path: "/live-ledger" },
+  { name: "Semak Baki", path: "/semak-baki" },
+  { name: "Kira Zakat", path: "/calculator" },
+  { name: "Bayar Online", path: "/bayar" },
+  { name: "Withdraw", path: "/withdraw" }
+];
+
 export default function Navbar() {
   const { open } = useAppKit();
   const { address, isConnected } = useAppKitAccount();
@@ -130,14 +140,7 @@ export default function Navbar() {
               </span>
             </Link>
             <div className="hidden md:ml-8 md:flex md:space-x-6">
-              {[
-                { name: "Laman Utama", path: "/" },
-                { name: "Transaksi", path: "/live-ledger" },
-                // { name: "Pay Zakat", path: "/pay-zakat" },
-                { name: "Semak Baki", path: "/semak-baki" },
-                { name: "Kira Zakat", path: "/calculator" },
-                { name: "Bayar Online", path: "/bayar" }
-              ].map((item, index) => (
+              {NAV_ITEMS.map((item, index) => (
                 <Link
                   key={index}
                   href={item.path}
@@ -277,14 +280,7 @@ export default function Navbar() {
             transition={{ duration: 0.2, ease: "easeInOut" }}
           >
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md">
-              {[
-                { name: "Home", path: "/" },
-                { name: "Live Ledger", path: "/live-ledger" },
-                { name: "Pay Zakat", path: "/pay-zakat" },
-                { name: "Check Balance", path: "/check-balance" },
-                { name: "Zakat Calculator", path: "/calculator" },
-                { name: "Bayar Online", path: "/bayar" }
-              ].map((item, index) => (
+              {NAV_ITEMS.map((item, index) => (
                 <Link
                   key={index}
                   href={item.path}
@@ -312,7 +308,7 @@ export default function Navbar() {
                   Agih Zakat
                 </Link>
               )}
-              {isConnected && (
+              {/* {isConnected && (
                 <Link
                   href="#"
                   className={`px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center ${
@@ -336,7 +332,7 @@ export default function Navbar() {
                   </svg>
                   Profile
                 </Link>
-              )}
+              )} */}
             </div>
           </motion.div>
         )}

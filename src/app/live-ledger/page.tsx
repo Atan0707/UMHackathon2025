@@ -1,12 +1,22 @@
 "use client";
 
-import { formatTxHash, formatDate, Transaction } from '@/utils/transaction-history';
+import { formatTxHash, formatDate } from '@/utils/transaction-history';
 import { SUBGRAPH_URL, CONTRACT_ADDRESS, RPC_URL } from '@/utils/config';
 import { gql, request } from 'graphql-request';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import contractAbi from '@/contracts/abi.json';
+
+// Define the Transaction interface directly in this file
+interface Transaction {
+  txHash: string;
+  dateTime: string;
+  type: 'Distribution' | 'Payment' | 'Mint' | 'Burned';
+  from: string;
+  to: string;
+  amount: string;
+}
 
 // Define types for GraphQL response
 interface TokenClaimed {
@@ -43,12 +53,23 @@ interface Transfer {
   transactionHash: string;
 }
 
+interface RecipientAdded {
+  internal_id: string;
+  name: string;
+}
+
+interface ShopOwnerAdded {
+  internal_id: string;
+  name: string;
+}
+
 interface GraphQLResponse {
   tokenClaimeds: TokenClaimed[];
   tokenSpents: TokenSpent[];
   zakatDistributeds: ZakatDistributed[];
   transfers: Transfer[];
-  burnedTokens: Transfer[];
+  recipientAddeds: RecipientAdded[];
+  shopOwnerAddeds: ShopOwnerAdded[];
 }
 
 // GraphQL query to fetch transactions from The Graph
@@ -84,7 +105,21 @@ const GET_TRANSACTIONS = gql`
       blockTimestamp
       transactionHash
     }
-    burnedTokens: transfers(where: {to: "0x0000000000000000000000000000000000000000"}, orderBy: blockTimestamp, orderDirection: desc) {
+    recipientAddeds: recipientAddeds(first: 1000) {
+      internal_id
+      name
+    }
+    shopOwnerAddeds: shopOwnerAddeds(first: 1000) {
+      internal_id
+      name
+    }
+  }
+`;
+
+// Separate query for burned tokens
+const GET_BURNED_TOKENS = gql`
+  query GetBurnedTokens {
+    transfers(where: {to: "0x0000000000000000000000000000000000000000"}, orderBy: blockTimestamp, orderDirection: desc) {
       id
       from
       to
@@ -143,67 +178,169 @@ export default function LiveLedger() {
     queryFn: async () => {
       console.log('Fetching transaction data from:', SUBGRAPH_URL);
       try {
+        // Fetch main transaction data
         const response = await request<GraphQLResponse>(SUBGRAPH_URL, GET_TRANSACTIONS);
         console.log('GraphQL Response:', response);
         
-        // Calculate total burned tokens
-        const burnedTokensTotal = response.burnedTokens.reduce((total, tx) => 
-          total + Number(tx.value), 0);
-        const formattedBurned = (burnedTokensTotal / 1e18).toLocaleString('en-MY', 
-          { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        setTotalBurned(formattedBurned);
+        // Fetch burned tokens separately
+        let burnedTokens: Transfer[] = [];
+        try {
+          const burnedResponse = await request<{transfers: Transfer[]}>(SUBGRAPH_URL, GET_BURNED_TOKENS);
+          burnedTokens = burnedResponse.transfers || [];
+          
+          // Calculate total burned tokens with a safer approach
+          let burnedTokensTotal = 0;
+          if (Array.isArray(burnedTokens)) {
+            for (const tx of burnedTokens) {
+              if (tx && typeof tx === 'object' && 'value' in tx) {
+                try {
+                  const value = Number(tx.value);
+                  if (!isNaN(value)) {
+                    burnedTokensTotal += value;
+                  }
+                } catch (e) {
+                  console.warn('Error parsing token value:', e);
+                }
+              }
+            }
+          }
+          
+          const formattedBurned = (burnedTokensTotal / 1e18).toLocaleString('en-MY', 
+            { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          setTotalBurned(formattedBurned);
+        } catch (err) {
+          console.error('Error fetching burned tokens:', err);
+          setTotalBurned("0.00");
+          // Continue with empty burnedTokens array
+          burnedTokens = [];
+        }
         
         // Process and merge transaction data
+        let processedTxHashes = new Set<string>();
+        
+        // Ensure we have valid arrays for our lookups
+        const recipientAddeds = response.recipientAddeds || [];
+        const shopOwnerAddeds = response.shopOwnerAddeds || [];
+        
+        // First process burned tokens so they take priority
+        const burnedTransactions: Transaction[] = Array.isArray(burnedTokens) 
+          ? burnedTokens
+            .filter(tx => tx && typeof tx === 'object' && 'transactionHash' in tx)
+            .map((tx: Transfer): Transaction => {
+              // Add the tx hash to processed set
+              if (tx.transactionHash) {
+                processedTxHashes.add(tx.transactionHash);
+              }
+              
+              // Try to find the shop owner name from shopOwnerAddeds (the from address)
+              let fromDisplay = tx.from || '';
+              const shopOwner = shopOwnerAddeds.find(s => 
+                s.internal_id.toLowerCase() === fromDisplay.toLowerCase() || 
+                CONTRACT_ADDRESS.toLowerCase() === fromDisplay.toLowerCase()
+              );
+              
+              if (shopOwner) {
+                fromDisplay = shopOwner.name;
+              } else if (fromDisplay === CONTRACT_ADDRESS) {
+                fromDisplay = 'ZakatContract';
+              } else {
+                fromDisplay = formatTxHash(fromDisplay, 8);
+              }
+              
+              return {
+                txHash: tx.transactionHash || '',
+                dateTime: tx.blockTimestamp ? new Date(Number(tx.blockTimestamp) * 1000).toISOString() : new Date().toISOString(),
+                type: 'Burned',
+                from: fromDisplay,
+                to: 'Lembaga Zakat',
+                amount: tx.value ? (Number(tx.value) / 1e18).toFixed(2) : '0.00'
+              };
+            }) 
+          : [];
+        
+        // Process other transaction types, skipping those with hash already in processedTxHashes
         const allTransactions: Transaction[] = [
           // Map TokenClaimed events to Distribution transactions
-          ...(response.tokenClaimeds || []).map((tx: TokenClaimed) => ({
-            txHash: tx.transactionHash,
-            dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
-            type: 'Distribution' as const,
-            from: 'ZakatContract',
-            to: tx.internal_id,
-            amount: (Number(tx.amount) / 1e18).toFixed(2)
-          })),
+          ...(response.tokenClaimeds || [])
+            .filter(tx => !processedTxHashes.has(tx.transactionHash))
+            .map((tx: TokenClaimed) => {
+              processedTxHashes.add(tx.transactionHash);
+              
+              // For privacy, always display "Penerima" for recipients
+              const toDisplay = "Penerima";
+              
+              return {
+                txHash: tx.transactionHash,
+                dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
+                type: 'Distribution' as const,
+                from: 'ZakatContract',
+                to: toDisplay,
+                amount: (Number(tx.amount) / 1e18).toFixed(2)
+              };
+            }),
           
-          // Map TokenSpent events to Redemption transactions
-          ...(response.tokenSpents || []).map((tx: TokenSpent) => ({
-            txHash: tx.transactionHash,
-            dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
-            type: 'Redemption' as const,
-            from: tx.recipientId,
-            to: tx.shopOwnerId.startsWith('shop') ? `Merchant ${tx.shopOwnerId}` : tx.shopOwnerId,
-            amount: (Number(tx.amount) / 1e18).toFixed(2)
-          })),
+          // Map TokenSpent events to Payment transactions
+          ...(response.tokenSpents || [])
+            .filter(tx => !processedTxHashes.has(tx.transactionHash))
+            .map((tx: TokenSpent) => {
+              processedTxHashes.add(tx.transactionHash);
+              
+              // For privacy, always display "Penerima" for recipients
+              const fromDisplay = "Penerima";
+              
+              // Try to find the shop owner name from shopOwnerAddeds
+              let toDisplay = tx.shopOwnerId;
+              const shopOwner = shopOwnerAddeds.find(s => s.internal_id === tx.shopOwnerId);
+              if (shopOwner) {
+                toDisplay = shopOwner.name;
+              } else if (tx.shopOwnerId.startsWith('shop')) {
+                toDisplay = `Merchant ${tx.shopOwnerId.replace('shop', '')}`;
+              } else if (tx.shopOwnerId.match(/^0x[0-9a-f]{40}$/i)) {
+                toDisplay = formatTxHash(tx.shopOwnerId, 8);
+              }
+              
+              return {
+                txHash: tx.transactionHash,
+                dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
+                type: 'Payment' as const,
+                from: fromDisplay,
+                to: toDisplay,
+                amount: (Number(tx.amount) / 1e18).toFixed(2)
+              };
+            }),
           
           // Map ZakatDistributed events to Distribution transactions (to all recipients)
-          ...(response.zakatDistributeds || []).map((tx: ZakatDistributed) => ({
-            txHash: tx.transactionHash,
-            dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
-            type: 'Distribution' as const,
-            from: 'ZakatContract',
-            to: `${tx.recipientCount} Recipients`,
-            amount: (Number(tx.totalAmount) / 1e18).toFixed(2)
-          })),
+          ...(response.zakatDistributeds || [])
+            .filter(tx => !processedTxHashes.has(tx.transactionHash))
+            .map((tx: ZakatDistributed) => {
+              processedTxHashes.add(tx.transactionHash);
+              return {
+                txHash: tx.transactionHash,
+                dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
+                type: 'Distribution' as const,
+                from: 'ZakatContract',
+                to: 'Penerima',
+                amount: (Number(tx.totalAmount) / 1e18).toFixed(2)
+              };
+            }),
           
           // Map Transfer events from zero address (minting) to Mint transactions
-          ...(response.transfers || []).map((tx: Transfer) => ({
-            txHash: tx.transactionHash,
-            dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
-            type: 'Mint' as const,
-            from: 'Treasury',
-            to: 'ZakatContract',
-            amount: (Number(tx.value) / 1e18).toFixed(2)
-          })),
+          ...(response.transfers || [])
+            .filter(tx => !processedTxHashes.has(tx.transactionHash))
+            .map((tx: Transfer) => {
+              processedTxHashes.add(tx.transactionHash);
+              return {
+                txHash: tx.transactionHash,
+                dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
+                type: 'Mint' as const,
+                from: 'Lembaga Zakat',
+                to: 'ZakatContract',
+                amount: (Number(tx.value) / 1e18).toFixed(2)
+              };
+            }),
           
-          // Map burned token events
-          ...(response.burnedTokens || []).map((tx: Transfer) => ({
-            txHash: tx.transactionHash,
-            dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
-            type: 'Redemption' as const,
-            from: tx.from === CONTRACT_ADDRESS ? 'ZakatContract' : formatTxHash(tx.from, 8),
-            to: 'Burned',
-            amount: (Number(tx.value) / 1e18).toFixed(2)
-          }))
+          // Add the burned transactions first
+          ...burnedTransactions
         ];
         
         // Sort by date, newest first
@@ -251,7 +388,7 @@ export default function LiveLedger() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Collected Zakat */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
-              <div className="text-gray-400 text-sm mb-2">Total Zakat Collected</div>
+              <div className="text-gray-400 text-sm mb-2">Jumlah Zakat Diterima</div>
               {isLoadingZakat ? (
                 <div className="flex items-center justify-center h-12">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
@@ -265,7 +402,7 @@ export default function LiveLedger() {
 
             {/* Distributed Zakat */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
-              <div className="text-gray-400 text-sm mb-2">Total Zakat Distribution</div>
+              <div className="text-gray-400 text-sm mb-2">Jumlah Zakat Diagihkan</div>
               {isLoadingZakat ? (
                 <div className="flex items-center justify-center h-12">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
@@ -279,7 +416,7 @@ export default function LiveLedger() {
             
             {/* Burned Tokens (Redeemed by Merchants) */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
-              <div className="text-gray-400 text-sm mb-2">Total Tokens Redeemed</div>
+              <div className="text-gray-400 text-sm mb-2">Jumlah Token Dituntut</div>
               {isLoading ? (
                 <div className="flex items-center justify-center h-12">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
@@ -294,7 +431,7 @@ export default function LiveLedger() {
         </div>
 
         <h1 className="text-xl font-medium text-gray-100 mb-4 max-w-4xl mx-auto">
-          Transaction History
+          Rekod Transaksi
         </h1>
         <div className="w-full max-w-4xl mx-auto bg-gray-800 rounded-lg overflow-hidden">
           {isLoading ? (
@@ -330,12 +467,12 @@ export default function LiveLedger() {
               <table className="w-full text-left">
                 <thead className="bg-gray-900">
                   <tr>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Tx Hash</th>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Date and Time</th>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Type</th>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">From</th>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">To</th>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Amount (ZKT)</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">ID Transaksi</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Tarikh & Masa</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Jenis</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Daripada</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Kepada</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Jumlah (ZKT)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -357,17 +494,18 @@ export default function LiveLedger() {
                       <td className="py-3 px-4">
                         <span className={`inline-block px-2 py-1 text-xs rounded ${
                           tx.type === 'Distribution' ? 'bg-green-900 text-green-300' : 
-                          tx.type === 'Redemption' ? (tx.to === 'Burned' ? 'bg-red-900 text-red-300' : 'bg-purple-900 text-purple-300') :
+                          tx.type === 'Burned' ? 'bg-red-900 text-red-300' :
+                          tx.type === 'Payment' ? 'bg-purple-900 text-purple-300' :
                           'bg-blue-900 text-blue-300'
                         }`}>
-                          {tx.to === 'Burned' ? 'Burned' : tx.type}
+                          {tx.type === 'Burned' ? 'CONVERT TO FIAT' : tx.type}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-300 font-mono">
-                        {tx.from === 'ZakatContract' || tx.from === 'Treasury' ? tx.from : formatTxHash(tx.from, 8)}
+                        {tx.from === 'ZakatContract' || tx.from === 'Lembaga Zakat' || tx.from === 'Penerima' ? tx.from : formatTxHash(tx.from, 8)}
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-300 font-mono">
-                        {tx.to === 'ZakatContract' || tx.to === 'Burned' || tx.to.includes('Merchant') || tx.to.includes('Recipients') ? tx.to : formatTxHash(tx.to, 8)}
+                        {tx.to === 'ZakatContract' || tx.to === 'Lembaga Zakat' || tx.to === 'Burned' || tx.to.includes('Merchant') || tx.to === 'Penerima' ? tx.to : formatTxHash(tx.to, 8)}
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-100 font-medium">
                         {tx.amount}
