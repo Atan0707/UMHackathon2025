@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { CONTRACT_ADDRESS, RPC_URL } from '@/utils/config';
 import { ethers } from 'ethers';
@@ -25,6 +25,8 @@ export default function BayarPage() {
   const [txStatus, setTxStatus] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const receiptRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -352,6 +354,347 @@ export default function BayarPage() {
 
   const handleBankSelect = (bank: string) => {
     setSelectedBank(bank);
+  };
+
+  const downloadReceipt = () => {
+    setIsReceiptModalOpen(true);
+  };
+
+  const handlePrintReceipt = () => {
+    const receiptContent = receiptRef.current;
+    if (!receiptContent) return;
+
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) return;
+
+    const receiptId = `ZKT-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    const currentDate = new Date().toLocaleDateString();
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Resit Zakat #${receiptId}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+          }
+          .receipt {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+          }
+          .receipt-header {
+            background: linear-gradient(to right, #10B981, #34D399);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+          }
+          .receipt-logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+          }
+          .receipt-title {
+            font-size: 20px;
+            font-weight: bold;
+          }
+          .receipt-body {
+            padding: 30px;
+          }
+          .receipt-info {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+          }
+          .receipt-info-block {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 15px;
+          }
+          .receipt-info-block:first-child {
+            margin-right: 20px;
+          }
+          .receipt-label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+          }
+          .receipt-value {
+            font-weight: 500;
+            font-size: 16px;
+            color: #333;
+          }
+          .receipt-details {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 30px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+          }
+          .receipt-details th {
+            background-color: #f2f2f2;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+          }
+          .receipt-details td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+          }
+          .receipt-details tr:last-child td {
+            border-bottom: none;
+          }
+          .receipt-total {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            margin-top: 20px;
+            padding: 15px 0;
+            border-top: 2px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .receipt-total-label {
+            color: #555;
+            font-weight: 500;
+          }
+          .receipt-total-value {
+            color: #10B981;
+            font-size: 24px;
+            font-weight: 700;
+          }
+          .receipt-footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+          }
+          .blockchain-info {
+            background-color: #EFF6FF;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 30px 0;
+            font-size: 14px;
+            border: 1px solid #DBEAFE;
+          }
+          .blockchain-info-title {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+          }
+          .blockchain-info-title svg {
+            margin-right: 8px;
+            color: #3B82F6;
+          }
+          .blockchain-tx {
+            word-break: break-all;
+            color: #2563EB;
+            font-family: monospace;
+            background-color: white;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #DBEAFE;
+            margin-bottom: 10px;
+          }
+          .blockchain-link {
+            color: #2563EB;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+          }
+          .blockchain-link:hover {
+            text-decoration: underline;
+          }
+          .blockchain-link svg {
+            width: 14px;
+            height: 14px;
+            margin-left: 4px;
+          }
+          .print-button {
+            background-color: #10B981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+          }
+          .print-button:hover {
+            background-color: #059669;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          }
+          .success-indicator {
+            background-color: #D1FAE5;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 30px auto;
+            max-width: 300px;
+            border: 1px solid #A7F3D0;
+          }
+          .success-indicator svg {
+            color: #10B981;
+            width: 24px;
+            height: 24px;
+            margin-bottom: 5px;
+          }
+          .success-text {
+            color: #065F46;
+            font-weight: 600;
+          }
+          @media print {
+            .print-button {
+              display: none;
+            }
+            body {
+              background-color: white;
+            }
+            .receipt {
+              box-shadow: none;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="receipt">
+          <div class="receipt-header">
+            <div class="receipt-logo">ZakatPay™</div>
+            <div class="receipt-title">RESIT PEMBAYARAN ZAKAT</div>
+          </div>
+          <div class="receipt-body">
+            <div class="receipt-info">
+              <div class="receipt-info-block">
+                <div class="receipt-label">No. Resit</div>
+                <div class="receipt-value">${receiptId}</div>
+                
+                <div style="margin-top: 15px; display: flex;">
+                  <div style="margin-right: 30px;">
+                    <div class="receipt-label">Tarikh</div>
+                    <div class="receipt-value">${currentDate}</div>
+                  </div>
+                  <div>
+                    <div class="receipt-label">Masa</div>
+                    <div class="receipt-value">${new Date().toLocaleTimeString()}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="receipt-info-block">
+                <div class="receipt-label">Pembayar</div>
+                <div class="receipt-value">${formData.nama || 'MUHAMMAD HAZRIL FAHMI'}</div>
+                
+                <div style="margin-top: 15px;">
+                  <div class="receipt-label">No. Pengenalan</div>
+                  <div class="receipt-value">${formData.nomorId || '031111010755'}</div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                  <div class="receipt-label">Telefon</div>
+                  <div class="receipt-value">+60${formData.telefon || '1234567890'}</div>
+                </div>
+              </div>
+            </div>
+            
+            <h3 style="margin-bottom: 15px; color: #333;">Butiran Pembayaran</h3>
+            <table class="receipt-details">
+              <thead>
+                <tr>
+                  <th>Butiran</th>
+                  <th style="text-align: right;">Nilai</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Jenis Zakat</td>
+                  <td style="text-align: right; font-weight: 500;">${formData.jenisZakat}</td>
+                </tr>
+                <tr>
+                  <td>Haul / Tahun</td>
+                  <td style="text-align: right; font-weight: 500;">${formData.tahun}</td>
+                </tr>
+                <tr style="background-color: #f9f9f9;">
+                  <td style="font-weight: 600;">Jumlah</td>
+                  <td style="text-align: right; font-weight: 700;">RM ${formData.jumlah || '0.00'}</td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <div class="receipt-total">
+              <div class="receipt-total-label">JUMLAH KESELURUHAN:</div>
+              <div class="receipt-total-value">RM ${formData.jumlah || '0.00'}</div>
+            </div>
+            
+            ${txHash ? `
+            <div class="blockchain-info">
+              <div class="blockchain-info-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Transaksi Blockchain
+              </div>
+              <div class="blockchain-tx">${txHash}</div>
+              <a href="https://sepolia.scrollscan.com/tx/${txHash}" target="_blank" class="blockchain-link">
+                Lihat di Block Explorer
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+            ` : ''}
+            
+            <div class="success-indicator">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div class="success-text">Pembayaran Telah Disahkan</div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 10px;">
+              <p style="color: #666;">Terima kasih atas pembayaran zakat anda.</p>
+              <p style="color: #666; margin-top: 5px;">Semoga Allah memberkati harta dan kehidupan anda.</p>
+            </div>
+            
+            <div class="receipt-footer">
+              <p>© ${new Date().getFullYear()} ZakatPay™ - Sistem Pembayaran Zakat Digital</p>
+            </div>
+            
+            <button class="print-button" onclick="window.print(); setTimeout(function() { window.close(); }, 500);">
+              Cetak Resit
+            </button>
+          </div>
+        </div>
+      </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
   };
 
   return (
@@ -733,7 +1076,7 @@ export default function BayarPage() {
                   <div className="flex flex-col mt-3 pt-3 border-t border-gray-200">
                     <span className="text-gray-600 mb-1">Blockchain Tx:</span>
                     <div className="flex items-center">
-                      <span className="font-medium text-xs mr-2">{txHash.slice(0, 10)}...{txHash.slice(-8)}</span>
+                      <span className="truncate text-blue-600 mr-2">{txHash.slice(0, 10)}...{txHash.slice(-8)}</span>
                       <a
                         href={`https://sepolia.scrollscan.com/tx/${txHash}`}
                         target="_blank"
@@ -758,7 +1101,13 @@ export default function BayarPage() {
                 )}
               </div>
             </div>
-            <button className="mt-6 px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700">
+            <button 
+              className="mt-6 px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center justify-center"
+              onClick={downloadReceipt}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
               Muat Turun Resit
             </button>
           </div>
@@ -842,6 +1191,169 @@ export default function BayarPage() {
           </button>
         </div>
       </div>
+
+      {/* Receipt Modal */}
+      {isReceiptModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto mt-10">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-gray-800">Resit Pembayaran Zakat</h3>
+                <button 
+                  onClick={() => setIsReceiptModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div 
+                ref={receiptRef} 
+                className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-4"
+              >
+                <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white p-8 text-center relative">
+                  <div className="absolute top-0 left-0 w-full h-full opacity-10">
+                    <div className="grid grid-cols-10 grid-rows-10 h-full">
+                      {[...Array(100)].map((_, i) => (
+                        <div key={i} className="border border-white/5"></div>
+                      ))}
+                    </div>
+                  </div>
+                  <h2 className="text-3xl font-bold tracking-tight">ZakatPay™</h2>
+                  <p className="text-lg mt-2 font-medium">RESIT PEMBAYARAN ZAKAT</p>
+                  <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                
+                <div className="p-6 md:p-8">
+                  <div className="flex flex-col md:flex-row justify-between mb-8 border-b border-gray-100 pb-6">
+                    <div className="mb-4 md:mb-0 bg-gray-50 p-4 rounded-lg flex-1 mr-0 md:mr-4">
+                      <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Nombor Resit</p>
+                      <p className="font-medium text-gray-800 text-lg">ZKT-{Math.floor(Math.random() * 10000).toString().padStart(4, '0')}</p>
+                      
+                      <div className="flex items-center mt-4">
+                        <div className="mr-6">
+                          <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Tarikh</p>
+                          <p className="font-medium text-gray-800">{new Date().toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Masa</p>
+                          <p className="font-medium text-gray-800">{new Date().toLocaleTimeString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-50 p-4 rounded-lg flex-1">
+                      <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Pembayar</p>
+                      <p className="font-medium text-gray-800 text-lg">{formData.nama || 'MUHAMMAD HAZRIL FAHMI'}</p>
+                      
+                      <div className="mt-4">
+                        <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">No. Pengenalan</p>
+                        <p className="font-medium text-gray-800">{formData.nomorId || '031111010755'}</p>
+                      </div>
+                      
+                      <div className="mt-4">
+                        <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Telefon</p>
+                        <p className="font-medium text-gray-800">+60{formData.telefon || '1234567890'}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-8">
+                    <h3 className="text-lg font-medium text-gray-800 mb-4">Butiran Pembayaran</h3>
+                    <div className="overflow-hidden rounded-xl border border-gray-200">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="py-4 px-6 text-left font-medium text-gray-600 uppercase tracking-wider">Butiran</th>
+                            <th className="py-4 px-6 text-right font-medium text-gray-600 uppercase tracking-wider">Nilai</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          <tr>
+                            <td className="py-4 px-6 text-gray-800">Jenis Zakat</td>
+                            <td className="py-4 px-6 text-right text-gray-800 font-medium">{formData.jenisZakat}</td>
+                          </tr>
+                          <tr>
+                            <td className="py-4 px-6 text-gray-800">Haul / Tahun</td>
+                            <td className="py-4 px-6 text-right text-gray-800 font-medium">{formData.tahun}</td>
+                          </tr>
+                          <tr className="bg-gray-50">
+                            <td className="py-4 px-6 text-gray-800 font-semibold">Jumlah</td>
+                            <td className="py-4 px-6 text-right text-gray-800 font-bold">RM {formData.jumlah || '0.00'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <p className="text-gray-600 font-medium">JUMLAH KESELURUHAN:</p>
+                      <p className="text-right font-bold text-xl text-emerald-700">RM {formData.jumlah || '0.00'}</p>
+                    </div>
+                  </div>
+                  
+                  {txHash && (
+                    <div className="mt-8 bg-blue-50 p-5 rounded-lg border border-blue-100">
+                      <div className="flex items-center mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <p className="font-semibold text-gray-800">Transaksi Blockchain</p>
+                      </div>
+                      <p className="text-blue-600 font-mono text-sm break-all bg-white p-3 rounded border border-blue-100">{txHash}</p>
+                      <a 
+                        href={`https://sepolia.scrollscan.com/tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800 mt-2 inline-flex items-center"
+                      >
+                        Lihat di Block Explorer
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                    </div>
+                  )}
+                  
+                  <div className="mt-8 text-center">
+                    <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100 inline-block">
+                      <svg className="w-8 h-8 text-emerald-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <p className="text-emerald-800 font-medium">Pembayaran Telah Disahkan</p>
+                    </div>
+                    <p className="mt-4 text-gray-600">Terima kasih atas pembayaran zakat anda.</p>
+                    <p className="mt-1 text-gray-600">Semoga Allah memberkati harta dan kehidupan anda.</p>
+                  </div>
+                  
+                  <div className="mt-10 pt-6 border-t border-gray-200 text-center">
+                    <p className="text-sm text-gray-500">© {new Date().getFullYear()} ZakatPay™ - Sistem Pembayaran Zakat Digital</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={handlePrintReceipt}
+                  className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center justify-center shadow-md transition-all duration-200 hover:shadow-lg"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  Cetak Resit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
