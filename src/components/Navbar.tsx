@@ -135,9 +135,11 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold bg-gradient-to-r from-emerald-500 to-blue-600 bg-clip-text text-transparent">
-                ZAKAT
-              </span>
+              <img
+                src="/images/logobiru.png"
+                alt="Zakat Logo"
+                className="h-8 w-auto"
+              />
             </Link>
             <div className="hidden md:ml-8 md:flex md:space-x-6">
               {NAV_ITEMS.map((item, index) => (

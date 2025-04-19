@@ -7,6 +7,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import contractAbi from '@/contracts/abi.json';
+import AnimatedCounter from '@/components/AnimatedCounter';
+import { motion } from 'framer-motion';
 
 // Define the Transaction interface directly in this file
 interface Transaction {
@@ -139,6 +141,9 @@ export default function LiveLedger() {
   const [totalShopOwners, setTotalShopOwners] = useState<string>("0");
   const [isLoadingZakat, setIsLoadingZakat] = useState<boolean>(true);
   const [errorZakat, setErrorZakat] = useState<boolean>(false);
+
+  // State to force counter animation to restart on data refresh
+  const [animationKey, setAnimationKey] = useState(0);
 
   // Fetch dashboard data
   const fetchZakatData = async () => {
@@ -369,13 +374,15 @@ export default function LiveLedger() {
   useEffect(() => {
     refetch();
     fetchZakatData();
-
+    
     // Set up interval to refresh data every 60 seconds
     const interval = setInterval(() => {
       refetch();
       fetchZakatData();
+      // Trigger reanimation of counters by forcing a key change
+      setAnimationKey(prev => prev + 1);
     }, 60000);
-
+    
     // Clean up interval on unmount
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -388,13 +395,32 @@ export default function LiveLedger() {
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
         {/* Zakat Dashboard */}
-        <div className="max-w-4xl mx-auto bg-gray-800 rounded-lg p-6 mb-10">
-          <h2 className="text-xl font-medium text-center text-gray-100 mb-6">Zakat Dashboard</h2>
+        <div className="max-w-4xl mx-auto bg-gray-900/50 backdrop-blur-sm rounded-xl p-8 mb-10 shadow-lg">
+          <motion.div 
+            className="flex items-center justify-center mb-8"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-emerald-500/30 mr-4"></div>
+            <h2 className="text-lg font-medium text-center text-gray-300 uppercase tracking-wider">Zakat Dashboard</h2>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-emerald-500/30 ml-4"></div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 md:divide-x md:divide-gray-700/30">
             {/* Collected Zakat */}
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
-              <div className="text-gray-400 text-sm mb-2">Jumlah Zakat Diterima</div>
+            <motion.div 
+              className="bg-transparent text-center px-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <div className="flex justify-center mb-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500/70" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="text-gray-400 text-xs uppercase tracking-wider mb-3">Jumlah Zakat Diterima</div>
               {isLoadingZakat ? (
                 <div className="flex items-center justify-center h-12">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
@@ -402,13 +428,28 @@ export default function LiveLedger() {
               ) : errorZakat ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <div className="text-3xl font-medium text-gray-100">RM {totalCollected}</div>
+                <AnimatedCounter 
+                  prefix="RM" 
+                  value={totalCollected}
+                  key={`collected-${animationKey}`}
+                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center" 
+                />
               )}
-            </div>
+            </motion.div>
 
             {/* Distributed Zakat */}
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
-              <div className="text-gray-400 text-sm mb-2">Jumlah Zakat Diagihkan</div>
+            <motion.div 
+              className="bg-transparent text-center px-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              <div className="flex justify-center mb-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500/70" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z" />
+                </svg>
+              </div>
+              <div className="text-gray-400 text-xs uppercase tracking-wider mb-3">Jumlah Zakat Diagihkan</div>
               {isLoadingZakat ? (
                 <div className="flex items-center justify-center h-12">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
@@ -416,13 +457,28 @@ export default function LiveLedger() {
               ) : errorZakat ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <div className="text-3xl font-medium text-gray-100">RM {totalDistributed}</div>
+                <AnimatedCounter 
+                  prefix="RM" 
+                  value={totalDistributed}
+                  key={`distributed-${animationKey}`}
+                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center" 
+                />
               )}
-            </div>
+            </motion.div>
             
             {/* Burned Tokens (Redeemed by Merchants) */}
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
-              <div className="text-gray-400 text-sm mb-2">Jumlah Token Dituntut</div>
+            <motion.div 
+              className="bg-transparent text-center px-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <div className="flex justify-center mb-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500/70" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="text-gray-400 text-xs uppercase tracking-wider mb-3">Jumlah Token Dituntut</div>
               {isLoading ? (
                 <div className="flex items-center justify-center h-12">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
@@ -430,13 +486,28 @@ export default function LiveLedger() {
               ) : error ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <div className="text-3xl font-medium text-gray-100">RM {totalBurned}</div>
+                <AnimatedCounter 
+                  prefix="RM" 
+                  value={totalBurned}
+                  key={`burned-${animationKey}`}
+                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center" 
+                />
               )}
-            </div>
+            </motion.div>
 
             {/* Total Recipients */}
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
-              <div className="text-gray-400 text-sm mb-2">Jumlah Penerima</div>
+            <motion.div 
+              className="bg-transparent text-center px-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+            >
+              <div className="flex justify-center mb-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500/70" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                </svg>
+              </div>
+              <div className="text-gray-400 text-xs uppercase tracking-wider mb-3">Jumlah Penerima</div>
               {isLoadingZakat ? (
                 <div className="flex items-center justify-center h-12">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
@@ -444,13 +515,28 @@ export default function LiveLedger() {
               ) : errorZakat ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <div className="text-3xl font-medium text-gray-100">{totalRecipients}</div>
+                <AnimatedCounter 
+                  value={totalRecipients} 
+                  prefix=""
+                  key={`recipients-${animationKey}`}
+                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center" 
+                />
               )}
-            </div>
+            </motion.div>
 
             {/* Total Shop Owners */}
-            <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
-              <div className="text-gray-400 text-sm mb-2">Kedai Berdaftar</div>
+            <motion.div 
+              className="bg-transparent text-center px-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+            >
+              <div className="flex justify-center mb-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500/70" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                </svg>
+              </div>
+              <div className="text-gray-400 text-xs uppercase tracking-wider mb-3">Kedai<br/> Berdaftar</div>
               {isLoadingZakat ? (
                 <div className="flex items-center justify-center h-12">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
@@ -458,15 +544,25 @@ export default function LiveLedger() {
               ) : errorZakat ? (
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
-                <div className="text-3xl font-medium text-gray-100">{totalShopOwners}</div>
+                <AnimatedCounter 
+                  value={totalShopOwners} 
+                  prefix=""
+                  key={`shopowners-${animationKey}`}
+                  className="text-3xl font-light text-gray-100 h-12 flex justify-center items-center" 
+                />
               )}
-            </div>
+            </motion.div>
           </div>
         </div>
 
-        <h1 className="text-xl font-medium text-gray-100 mb-4 max-w-4xl mx-auto">
+        <motion.h1 
+          className="text-lg font-medium text-gray-100 mb-4 max-w-4xl mx-auto uppercase tracking-wider"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+        >
           Rekod Transaksi
-        </h1>
+        </motion.h1>
         <div className="w-full max-w-4xl mx-auto bg-gray-800 rounded-lg overflow-hidden">
           {isLoading ? (
             <div className="flex justify-center items-center py-10">
@@ -498,20 +594,20 @@ export default function LiveLedger() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-gray-900">
+              <table className="w-full text-left border-collapse">
+                <thead>
                   <tr>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">ID Transaksi</th>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Tarikh & Masa</th>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Jenis</th>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Daripada</th>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Kepada</th>
-                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase">Jumlah (ZKT)</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase border-b border-gray-700">ID Transaksi</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase border-b border-gray-700">Tarikh & Masa</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase border-b border-gray-700">Jenis</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase border-b border-gray-700">Daripada</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase border-b border-gray-700">Kepada</th>
+                    <th className="py-3 px-4 text-xs font-medium text-gray-400 uppercase border-b border-gray-700">Jumlah (ZKT)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.map((tx, index) => (
-                    <tr key={index} className={`border-t border-gray-700 ${index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-750'} hover:bg-gray-700`}>
+                    <tr key={index} className="border-b border-gray-800 hover:bg-gray-750/30">
                       <td className="py-3 px-4 text-gray-300 font-mono text-xs">
                         <a
                           href={`https://sepolia.scrollscan.com/tx/${tx.txHash}`}
@@ -526,11 +622,12 @@ export default function LiveLedger() {
                         {formatDate(tx.dateTime)}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-block px-2 py-1 text-xs rounded ${tx.type === 'Distribution' ? 'bg-green-900 text-green-300' :
-                          tx.type === 'Burned' ? 'bg-red-900 text-red-300' :
-                            tx.type === 'Payment' ? 'bg-purple-900 text-purple-300' :
-                              'bg-blue-900 text-blue-300'
-                          }`}>
+                        <span className={`inline-block px-2 py-0.5 text-xs rounded-sm ${
+                          tx.type === 'Distribution' ? 'text-green-300' :
+                          tx.type === 'Burned' ? 'text-red-300' :
+                          tx.type === 'Payment' ? 'text-purple-300' :
+                          'text-blue-300'
+                        }`}>
                           {tx.type === 'Burned' ? 'CONVERT TO FIAT' : tx.type}
                         </span>
                       </td>
