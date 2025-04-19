@@ -607,7 +607,7 @@ export default function LiveLedger() {
                 </thead>
                 <tbody>
                   {data.map((tx, index) => (
-                    <tr key={index} className="border-b border-gray-800 hover:bg-gray-750/30">
+                    <tr key={index} className="border-b border-gray-700/30 hover:bg-gray-750/30">
                       <td className="py-3 px-4 text-gray-300 font-mono text-xs">
                         <a
                           href={`https://sepolia.scrollscan.com/tx/${tx.txHash}`}
