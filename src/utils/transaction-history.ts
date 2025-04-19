@@ -17,9 +17,9 @@ export const getAllTransactions = (): Transaction[] => {
 };
 
 // Format transaction hash with ellipsis
-export const formatTxHash = (hash: string, length: number = 10): string => {
+export const formatTxHash = (hash: string, length: number = 10, showEllipsis: boolean = true): string => {
   if (!hash) return '';
-  return `${hash.substring(0, length)}...`;
+  return showEllipsis ? `${hash.substring(0, length)}...` : hash.substring(0, length);
 };
 
 // Format date to a more readable format
