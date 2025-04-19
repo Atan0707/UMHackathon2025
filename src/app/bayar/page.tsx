@@ -774,6 +774,11 @@ export default function BayarPage() {
             position: relative;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
           }
+          .success-indicator.failed {
+            background-color: #FEE2E2;
+            border: 1px solid #FECACA;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
+          }
           .success-indicator::before {
             content: '';
             position: absolute;
@@ -972,39 +977,17 @@ export default function BayarPage() {
             </div>
             ` : ''}
             
-<<<<<<< HEAD
-            <div className="success-indicator">
-=======
-            <div class="nft-info">
-              <div class="nft-info-title">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                </svg>
-                Resit NFT
-              </div>
-              <div class="nft-info-content">
-                <p>NFT receipt telah dimint ke alamat email:</p>
-                <p class="nft-email">${formData.email || 'user@example.com'}</p>
-                ${nftTxHash ? `
-                <div class="nft-tx">
-                  <p>NFT Transaction Hash:</p>
-                  <a href="https://sepolia.scrollscan.com/tx/${nftTxHash}" target="_blank" class="blockchain-link">
-                    ${nftTxHash}
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </a>
-                </div>
-                ` : ''}
-              </div>
-            </div>
-            
-            <div class="success-indicator">
->>>>>>> 8871c60 (fix receipt)
+            <div class="success-indicator${txStatus === 'Failed' ? ' failed' : ''}">
+              ${txStatus === 'Failed' ? `
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-red-600">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              ` : `
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <div class="success-text">Pembayaran Telah Disahkan</div>
+              `}
+              <div class="success-text">${txStatus === 'Failed' ? 'Pembayaran Telah Gagal' : 'Pembayaran Telah Disahkan'}</div>
             </div>
             
             <div style="text-align: center; margin-top: 20px;">
@@ -1392,12 +1375,22 @@ export default function BayarPage() {
         {step === 4 && (
           <div className="text-center py-8">
             <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              {txStatus === 'Failed' ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
             </div>
-            <h2 className="text-2xl font-bold text-green-600 mb-2">Pembayaran Berjaya!</h2>
-            <p className="text-gray-600 mb-2">Pembayaran zakat anda telah berjaya diproses</p>
+            {txStatus === 'Failed' ? (
+              <h2 className="text-2xl font-bold text-red-600 mb-2">Pembayaran Gagal!</h2>
+            ) : (
+              <h2 className="text-2xl font-bold text-green-600 mb-2">Pembayaran Berjaya!</h2>
+            )}
+            <p className="text-gray-600 mb-2">Pembayaran zakat anda telah {txStatus === 'Failed' ? 'gagal' : 'berjaya'} diproses</p>
             <p className="text-blue-600 mb-6 text-sm">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
