@@ -454,53 +454,86 @@ export default function BayarPage() {
         <title>Resit Zakat #${receiptId}</title>
         <style>
           body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background-color: #f9f9f9;
+            color: #333;
           }
           .receipt {
             max-width: 800px;
-            margin: 0 auto;
+            margin: 20px auto;
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             overflow: hidden;
-          }
-          .receipt-header {
-            background: linear-gradient(to right, #10B981, #34D399);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
             position: relative;
           }
+          .receipt-header {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+          }
+          .receipt-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+          }
           .receipt-logo {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            position: relative;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
           }
           .receipt-title {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
+            position: relative;
+            letter-spacing: 0.5px;
           }
           .receipt-body {
-            padding: 30px;
+            padding: 40px;
           }
           .receipt-info {
             display: flex;
             justify-content: space-between;
             flex-wrap: wrap;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             border-bottom: 1px solid #eee;
-            padding-bottom: 20px;
+            padding-bottom: 30px;
+            position: relative;
+          }
+          .receipt-info::after {
+            content: '';
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            background-color: #f9f9f9;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            border-right: 1px solid #eee;
+            border-bottom: 1px solid #eee;
           }
           .receipt-info-block {
             background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
             flex: 1;
             min-width: 250px;
             margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #10B981;
           }
           .receipt-info-block:first-child {
             margin-right: 20px;
@@ -509,142 +542,199 @@ export default function BayarPage() {
             color: #666;
             font-size: 12px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
             margin-bottom: 5px;
+            font-weight: 600;
           }
           .receipt-value {
-            font-weight: 500;
+            font-weight: 600;
             font-size: 16px;
             color: #333;
           }
           .receipt-details {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0 30px;
-            border: 1px solid #eee;
-            border-radius: 8px;
+            margin: 25px 0 35px;
+            border: none;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
             overflow: hidden;
           }
           .receipt-details th {
             background-color: #f2f2f2;
-            padding: 15px;
+            padding: 16px 20px;
             text-align: left;
             font-weight: 600;
             color: #555;
             text-transform: uppercase;
             font-size: 12px;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #ddd;
           }
           .receipt-details td {
-            padding: 15px;
+            padding: 16px 20px;
             border-bottom: 1px solid #eee;
           }
           .receipt-details tr:last-child td {
             border-bottom: none;
           }
+          .receipt-details tr:nth-child(even) {
+            background-color: #fafafa;
+          }
+          .receipt-details tr:last-child {
+            background-color: #f8f8f8;
+          }
           .receipt-total {
             font-size: 18px;
             font-weight: bold;
             text-align: right;
-            margin-top: 20px;
-            padding: 15px 0;
-            border-top: 2px solid #eee;
+            margin-top: 30px;
+            padding: 20px 0;
+            border-top: 2px dashed #eee;
             display: flex;
             justify-content: space-between;
             align-items: center;
           }
           .receipt-total-label {
             color: #555;
-            font-weight: 500;
+            font-weight: 600;
+            letter-spacing: 0.5px;
           }
           .receipt-total-value {
             color: #10B981;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 700;
+            background: -webkit-linear-gradient(135deg, #10B981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            padding-right: 25px;
+            letter-spacing: 0.5px;
+          }
+          .receipt-total-value::after {
+            content: 'RM';
+            position: absolute;
+            top: 4px;
+            right: 0;
+            font-size: 14px;
+            color: #10B981;
+            -webkit-text-fill-color: #10B981;
+            font-weight: 600;
           }
           .receipt-footer {
-            margin-top: 30px;
+            margin-top: 40px;
             text-align: center;
             color: #666;
             font-size: 14px;
+            position: relative;
+            padding-top: 30px;
+          }
+          .receipt-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #ddd, transparent);
           }
           .blockchain-info {
             background-color: #EFF6FF;
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: 10px;
+            padding: 20px;
             margin: 30px 0;
             font-size: 14px;
             border: 1px solid #DBEAFE;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
           }
           .blockchain-info-title {
             display: flex;
             align-items: center;
             font-weight: 600;
-            margin-bottom: 10px;
-            color: #333;
+            margin-bottom: 15px;
+            color: #1E40AF;
+            font-size: 16px;
           }
           .blockchain-info-title svg {
-            margin-right: 8px;
+            margin-right: 10px;
             color: #3B82F6;
           }
           .blockchain-tx {
             word-break: break-all;
             color: #2563EB;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             background-color: white;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px 15px;
+            border-radius: 8px;
             border: 1px solid #DBEAFE;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) inset;
+            font-size: 13px;
           }
           .blockchain-link {
             color: #2563EB;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            padding: 8px 12px;
+            background-color: rgba(37, 99, 235, 0.1);
+            border-radius: 6px;
           }
           .blockchain-link:hover {
-            text-decoration: underline;
+            background-color: rgba(37, 99, 235, 0.2);
           }
           .blockchain-link svg {
             width: 14px;
             height: 14px;
-            margin-left: 4px;
+            margin-left: 6px;
           }
           .nft-info {
             background-color: #F5F3FF;
-            border-radius: 8px;
-            padding: 15px;
+            border-radius: 10px;
+            padding: 20px;
             margin: 30px 0;
             font-size: 14px;
             border: 1px solid #DDD6FE;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+            position: relative;
           }
           .nft-info-title {
             display: flex;
             align-items: center;
             font-weight: 600;
-            margin-bottom: 10px;
-            color: #333;
+            margin-bottom: 15px;
+            color: #5B21B6;
+            font-size: 16px;
           }
           .nft-info-title svg {
-            margin-right: 8px;
+            margin-right: 10px;
             color: #8B5CF6;
           }
           .nft-info-content {
-            padding: 10px;
+            padding: 15px;
             background-color: white;
-            border-radius: 4px;
+            border-radius: 8px;
             border: 1px solid #DDD6FE;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
           }
           .nft-email {
             font-weight: 600;
             color: #7C3AED;
-            margin-top: 5px;
-            margin-bottom: 10px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            padding: 6px 10px;
+            background-color: rgba(124, 58, 237, 0.1);
+            border-radius: 4px;
+            display: inline-block;
           }
           .nft-tx {
-            margin-top: 10px;
-            padding-top: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
             border-top: 1px dashed #DDD6FE;
           }
           .nft-tx p {
@@ -652,39 +742,130 @@ export default function BayarPage() {
             color: #6B7280;
           }
           .print-button {
-            background-color: #10B981;
+            background: linear-gradient(135deg, #10B981, #059669);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 14px 28px;
             font-size: 16px;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             margin-top: 30px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
             transition: all 0.2s;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px auto 15px;
+          }
+          .print-button svg {
+            margin-right: 8px;
           }
           .print-button:hover {
-            background-color: #059669;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
           }
           .success-indicator {
             background-color: #D1FAE5;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
-            margin: 30px auto;
+            margin: 40px auto;
             max-width: 300px;
             border: 1px solid #A7F3D0;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+          }
+          .success-indicator::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 0;
           }
           .success-indicator svg {
             color: #10B981;
-            width: 24px;
-            height: 24px;
-            margin-bottom: 5px;
+            width: 28px;
+            height: 28px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
           }
           .success-text {
             color: #065F46;
+            font-weight: 700;
+            font-size: 18px;
+          }
+          .zigzag-top, .zigzag-bottom {
+            height: 8px;
+            width: 100%;
+            background: linear-gradient(135deg, #f9f9f9 25%, transparent 25%) -8px 0,
+                        linear-gradient(225deg, #f9f9f9 25%, transparent 25%) -8px 0,
+                        linear-gradient(315deg, #f9f9f9 25%, transparent 25%),
+                        linear-gradient(45deg, #f9f9f9 25%, transparent 25%);
+            background-size: 16px 16px;
+            background-color: white;
+            position: relative;
+            z-index: 5;
+          }
+          .zigzag-top {
+            margin-top: -6px;
+          }
+          .zigzag-bottom {
+            margin-bottom: -6px;
+          }
+          .section-title {
+            position: relative;
+            font-size: 18px;
             font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+          }
+          .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(to right, #10B981, #059669);
+            border-radius: 2px;
+          }
+          .stamp {
+            position: absolute;
+            top: 80px;
+            right: 40px;
+            width: 120px;
+            height: 120px;
+            transform: rotate(12deg);
+            border: 2px solid #10B981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #10B981;
+            font-weight: 700;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+          }
+          .stamp-inner {
+            border: 1px dashed #10B981;
+            width: 112px;
+            height: 112px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
           @media print {
             .print-button {
@@ -695,6 +876,7 @@ export default function BayarPage() {
             }
             .receipt {
               box-shadow: none;
+              margin: 0;
             }
           }
         </style>
@@ -705,42 +887,55 @@ export default function BayarPage() {
             <div class="receipt-logo">ZakatPay™</div>
             <div class="receipt-title">RESIT PEMBAYARAN ZAKAT</div>
           </div>
+          
+          <div class="zigzag-top"></div>
+          
           <div class="receipt-body">
+            <div class="stamp">
+              <div class="stamp-inner">Dibayar</div>
+            </div>
+            
             <div class="receipt-info">
+<<<<<<< HEAD
               <div className="receipt-info-block">
                 <div className="receipt-label">No. Resit</div>
                 <div className="receipt-value">${receiptId}</div>
+=======
+              <div class="receipt-info-block">
+                <div class="receipt-label">No. Resit</div>
+                <div class="receipt-value">${currentReceiptId}</div>
+>>>>>>> 8871c60 (fix receipt)
                 
                 <div style="margin-top: 15px; display: flex;">
                   <div style="margin-right: 30px;">
-                    <div className="receipt-label">Tarikh</div>
-                    <div className="receipt-value">${currentDate}</div>
+                    <div class="receipt-label">Tarikh</div>
+                    <div class="receipt-value">${currentDate}</div>
                   </div>
                   <div>
-                    <div className="receipt-label">Masa</div>
-                    <div className="receipt-value">${new Date().toLocaleTimeString()}</div>
+                    <div class="receipt-label">Masa</div>
+                    <div class="receipt-value">${new Date().toLocaleTimeString()}</div>
                   </div>
                 </div>
               </div>
               
-              <div className="receipt-info-block">
-                <div className="receipt-label">Pembayar</div>
-                <div className="receipt-value">${formData.nama || 'MUHAMMAD HAZRIL FAHMI'}</div>
+              <div class="receipt-info-block">
+                <div class="receipt-label">Pembayar</div>
+                <div class="receipt-value">${formData.nama || 'MUHAMMAD HAZRIL FAHMI'}</div>
                 
                 <div style="margin-top: 15px;">
-                  <div className="receipt-label">No. Pengenalan</div>
-                  <div className="receipt-value">${formData.nomorId || '031111010755'}</div>
+                  <div class="receipt-label">No. Pengenalan</div>
+                  <div class="receipt-value">${formData.nomorId || '031111010755'}</div>
                 </div>
                 
                 <div style="margin-top: 15px;">
-                  <div className="receipt-label">Email</div>
-                  <div className="receipt-value">${formData.email || 'user@example.com'}</div>
+                  <div class="receipt-label">Email</div>
+                  <div class="receipt-value">${formData.email || 'user@example.com'}</div>
                 </div>
               </div>
             </div>
             
-            <h3 style="margin-bottom: 15px; color: #333;">Butiran Pembayaran</h3>
-            <table className="receipt-details">
+            <h3 class="section-title">Butiran Pembayaran</h3>
+            <table class="receipt-details">
               <thead>
                 <tr>
                   <th>Butiran</th>
@@ -756,28 +951,28 @@ export default function BayarPage() {
                   <td>Haul / Tahun</td>
                   <td style="text-align: right; font-weight: 500;">${formData.tahun}</td>
                 </tr>
-                <tr style="background-color: #f9f9f9;">
+                <tr>
                   <td style="font-weight: 600;">Jumlah</td>
-                  <td style="text-align: right; font-weight: 700;">RM ${formData.jumlah || '0.00'}</td>
+                  <td style="text-align: right; font-weight: 700;">${formData.jumlah || '0.00'}</td>
                 </tr>
               </tbody>
             </table>
             
-            <div className="receipt-total">
-              <div className="receipt-total-label">JUMLAH KESELURUHAN:</div>
-              <div className="receipt-total-value">RM ${formData.jumlah || '0.00'}</div>
+            <div class="receipt-total">
+              <div class="receipt-total-label">JUMLAH KESELURUHAN:</div>
+              <div class="receipt-total-value">${formData.jumlah || '0.00'}</div>
             </div>
             
             ${txHash ? `
-            <div className="blockchain-info">
-              <div className="blockchain-info-title">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="blockchain-info">
+              <div class="blockchain-info-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 Transaksi Blockchain
               </div>
-              <div className="blockchain-tx">${txHash}</div>
-              <a href="https://sepolia.scrollscan.com/tx/${txHash}" target="_blank" className="blockchain-link">
+              <div class="blockchain-tx">${txHash}</div>
+              <a href="https://sepolia.scrollscan.com/tx/${txHash}" target="_blank" class="blockchain-link">
                 Lihat di Block Explorer
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -786,26 +981,59 @@ export default function BayarPage() {
             </div>
             ` : ''}
             
+<<<<<<< HEAD
             <div className="success-indicator">
+=======
+            <div class="nft-info">
+              <div class="nft-info-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                </svg>
+                Resit NFT
+              </div>
+              <div class="nft-info-content">
+                <p>NFT receipt telah dimint ke alamat email:</p>
+                <p class="nft-email">${formData.email || 'user@example.com'}</p>
+                ${nftTxHash ? `
+                <div class="nft-tx">
+                  <p>NFT Transaction Hash:</p>
+                  <a href="https://sepolia.scrollscan.com/tx/${nftTxHash}" target="_blank" class="blockchain-link">
+                    ${nftTxHash}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+            
+            <div class="success-indicator">
+>>>>>>> 8871c60 (fix receipt)
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <div className="success-text">Pembayaran Telah Disahkan</div>
+              <div class="success-text">Pembayaran Telah Disahkan</div>
             </div>
             
-            <div style="text-align: center; margin-top: 10px;">
-              <p style="color: #666;">Terima kasih atas pembayaran zakat anda.</p>
-              <p style="color: #666; margin-top: 5px;">Semoga Allah memberkati harta dan kehidupan anda.</p>
+            <div style="text-align: center; margin-top: 20px;">
+              <p style="color: #666; font-size: 15px;">Terima kasih atas pembayaran zakat anda.</p>
+              <p style="color: #666; margin-top: 5px; font-style: italic;">Semoga Allah memberkati harta dan kehidupan anda.</p>
             </div>
             
-            <div className="receipt-footer">
+            <div class="receipt-footer">
               <p>© ${new Date().getFullYear()} ZakatPay™ - Sistem Pembayaran Zakat Digital</p>
             </div>
             
-            <button className="print-button" onclick="window.print(); setTimeout(function() { window.close(); }, 500);">
+            <button class="print-button" onclick="window.print(); setTimeout(function() { window.close(); }, 500);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
               Cetak Resit
             </button>
           </div>
+          
+          <div class="zigzag-bottom"></div>
         </div>
       </body>
       </html>
