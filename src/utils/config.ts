@@ -4,3 +4,4 @@ export const SUBGRAPH_URL =
   "https://api.studio.thegraph.com/query/106159/umhackathonv3/version/latest";
 export const RPC_URL =
   "https://scroll-sepolia.g.alchemy.com/v2/7z_rnkKFONf8r6Adr1poXg1qugZlhclq";
+export const ZAKAT_NFT_CONTRACT_ADDRESS = "0xCf46E80e77D78c9D3726A254E60296CAD42cc9bF";

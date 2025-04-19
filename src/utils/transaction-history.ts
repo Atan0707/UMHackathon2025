@@ -5,7 +5,7 @@ import transactionData from '@/data/transaction-history.json';
 export interface Transaction {
   txHash: string;
   dateTime: string;
-  type: 'Distribution' | 'Redemption' | 'Mint';
+  type: 'Pengagihan Zakat' | 'Redemption' | 'Pembayaran Zakat';
   from: string;
   to: string;
   amount: string;
@@ -16,19 +16,31 @@ export const getAllTransactions = (): Transaction[] => {
   return transactionData as Transaction[];
 };
 
-// Format transaction hash with ellipsis
-export const formatTxHash = (hash: string, length: number = 10, showEllipsis: boolean = true): string => {
-  if (!hash) return '';
-  return showEllipsis ? `${hash.substring(0, length)}...` : hash.substring(0, length);
+// Format transaction hash to shorter version
+export const formatTxHash = (hash: string, chars: number = 6): string => {
+  if (!hash || hash.length < chars * 2) return hash;
+  return `${hash.substring(0, chars)}...${hash.substring(hash.length - chars)}`;
 };
 
-// Format date to a more readable format
-export const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleString();
+// Format date string to more readable format
+export const formatDate = (dateTimeString: string): string => {
+  try {
+    const date = new Date(dateTimeString);
+    return date.toLocaleString('en-MY', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch (e) {
+    return dateTimeString;
+  }
 };
 
 // Get transactions by type
-export const getTransactionsByType = (type: 'Distribution' | 'Redemption' | 'Mint'): Transaction[] => {
+export const getTransactionsByType = (type: 'Pengagihan Zakat' | 'Redemption' | 'Pembayaran Zakat'): Transaction[] => {
   return (transactionData as Transaction[]).filter(tx => tx.type === type);
 };
 
