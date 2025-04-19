@@ -135,6 +135,8 @@ export default function LiveLedger() {
   const [totalCollected, setTotalCollected] = useState<string>("0");
   const [totalDistributed, setTotalDistributed] = useState<string>("0");
   const [totalBurned, setTotalBurned] = useState<string>("0");
+  const [totalRecipients, setTotalRecipients] = useState<string>("0");
+  const [totalShopOwners, setTotalShopOwners] = useState<string>("0");
   const [isLoadingZakat, setIsLoadingZakat] = useState<boolean>(true);
   const [errorZakat, setErrorZakat] = useState<boolean>(false);
 
@@ -151,11 +153,13 @@ export default function LiveLedger() {
       // Get distributed and undistributed amounts
       const distributed = await contract.getTotalDistributedTokens();
       const undistributed = await contract.getUndistributedTokens();
+      const recipientCount = await contract.getTotalRecipients();
+      const shopOwnerCount = await contract.getTotalShopOwners();
 
       // Calculate total collected (distributed + undistributed)
       const collected = distributed + undistributed;
 
-      // Format values (divide by 10^18 for 18 decimals and format with 2 decimal places)
+      // Format values
       const formattedCollected = parseFloat(ethers.formatUnits(collected, 4)).toLocaleString('en-MY',
         { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -164,6 +168,8 @@ export default function LiveLedger() {
 
       setTotalCollected(formattedCollected);
       setTotalDistributed(formattedDistributed);
+      setTotalRecipients(recipientCount.toString());
+      setTotalShopOwners(shopOwnerCount.toString());
     } catch (err) {
       console.error('Error fetching zakat data:', err);
       setErrorZakat(true);
@@ -385,7 +391,7 @@ export default function LiveLedger() {
         <div className="max-w-4xl mx-auto bg-gray-800 rounded-lg p-6 mb-10">
           <h2 className="text-xl font-medium text-center text-gray-100 mb-6">Zakat Dashboard</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {/* Collected Zakat */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
               <div className="text-gray-400 text-sm mb-2">Jumlah Zakat Diterima</div>
@@ -413,7 +419,7 @@ export default function LiveLedger() {
                 <div className="text-3xl font-medium text-gray-100">RM {totalDistributed}</div>
               )}
             </div>
-
+            
             {/* Burned Tokens (Redeemed by Merchants) */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
               <div className="text-gray-400 text-sm mb-2">Jumlah Token Dituntut</div>
@@ -425,6 +431,34 @@ export default function LiveLedger() {
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
                 <div className="text-3xl font-medium text-gray-100">RM {totalBurned}</div>
+              )}
+            </div>
+
+            {/* Total Recipients */}
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
+              <div className="text-gray-400 text-sm mb-2">Jumlah Penerima</div>
+              {isLoadingZakat ? (
+                <div className="flex items-center justify-center h-12">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
+                </div>
+              ) : errorZakat ? (
+                <div className="text-red-400 text-sm">Failed to load data</div>
+              ) : (
+                <div className="text-3xl font-medium text-gray-100">{totalRecipients}</div>
+              )}
+            </div>
+
+            {/* Total Shop Owners */}
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
+              <div className="text-gray-400 text-sm mb-2">Kedai Berdaftar</div>
+              {isLoadingZakat ? (
+                <div className="flex items-center justify-center h-12">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
+                </div>
+              ) : errorZakat ? (
+                <div className="text-red-400 text-sm">Failed to load data</div>
+              ) : (
+                <div className="text-3xl font-medium text-gray-100">{totalShopOwners}</div>
               )}
             </div>
           </div>
