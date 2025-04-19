@@ -48,6 +48,7 @@ interface GraphQLResponse {
   tokenSpents: TokenSpent[];
   zakatDistributeds: ZakatDistributed[];
   transfers: Transfer[];
+  burnedTokens: Transfer[];
 }
 
 // GraphQL query to fetch transactions from The Graph
@@ -83,6 +84,14 @@ const GET_TRANSACTIONS = gql`
       blockTimestamp
       transactionHash
     }
+    burnedTokens: transfers(where: {to: "0x0000000000000000000000000000000000000000"}, orderBy: blockTimestamp, orderDirection: desc) {
+      id
+      from
+      to
+      value
+      blockTimestamp
+      transactionHash
+    }
   }
 `;
 
@@ -90,6 +99,7 @@ export default function LiveLedger() {
   // Add state for zakat dashboard
   const [totalCollected, setTotalCollected] = useState<string>("0");
   const [totalDistributed, setTotalDistributed] = useState<string>("0");
+  const [totalBurned, setTotalBurned] = useState<string>("0");
   const [isLoadingZakat, setIsLoadingZakat] = useState<boolean>(true);
   const [errorZakat, setErrorZakat] = useState<boolean>(false);
 
@@ -136,6 +146,13 @@ export default function LiveLedger() {
         const response = await request<GraphQLResponse>(SUBGRAPH_URL, GET_TRANSACTIONS);
         console.log('GraphQL Response:', response);
         
+        // Calculate total burned tokens
+        const burnedTokensTotal = response.burnedTokens.reduce((total, tx) => 
+          total + Number(tx.value), 0);
+        const formattedBurned = (burnedTokensTotal / 1e18).toLocaleString('en-MY', 
+          { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        setTotalBurned(formattedBurned);
+        
         // Process and merge transaction data
         const allTransactions: Transaction[] = [
           // Map TokenClaimed events to Distribution transactions
@@ -175,6 +192,16 @@ export default function LiveLedger() {
             type: 'Mint' as const,
             from: 'Treasury',
             to: 'ZakatContract',
+            amount: (Number(tx.value) / 1e18).toFixed(2)
+          })),
+          
+          // Map burned token events
+          ...(response.burnedTokens || []).map((tx: Transfer) => ({
+            txHash: tx.transactionHash,
+            dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
+            type: 'Redemption' as const,
+            from: tx.from === CONTRACT_ADDRESS ? 'ZakatContract' : formatTxHash(tx.from, 8),
+            to: 'Burned',
             amount: (Number(tx.value) / 1e18).toFixed(2)
           }))
         ];
@@ -221,7 +248,7 @@ export default function LiveLedger() {
         <div className="max-w-4xl mx-auto bg-gray-800 rounded-lg p-6 mb-10">
           <h2 className="text-xl font-medium text-center text-gray-100 mb-6">Zakat Dashboard</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Collected Zakat */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
               <div className="text-gray-400 text-sm mb-2">Total Zakat Collected</div>
@@ -247,6 +274,20 @@ export default function LiveLedger() {
                 <div className="text-red-400 text-sm">Failed to load data</div>
               ) : (
                 <div className="text-3xl font-medium text-gray-100">RM {totalDistributed}</div>
+              )}
+            </div>
+            
+            {/* Burned Tokens (Redeemed by Merchants) */}
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
+              <div className="text-gray-400 text-sm mb-2">Total Tokens Redeemed</div>
+              {isLoading ? (
+                <div className="flex items-center justify-center h-12">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-600 border-t-gray-300"></div>
+                </div>
+              ) : error ? (
+                <div className="text-red-400 text-sm">Failed to load data</div>
+              ) : (
+                <div className="text-3xl font-medium text-gray-100">RM {totalBurned}</div>
               )}
             </div>
           </div>
@@ -316,17 +357,17 @@ export default function LiveLedger() {
                       <td className="py-3 px-4">
                         <span className={`inline-block px-2 py-1 text-xs rounded ${
                           tx.type === 'Distribution' ? 'bg-green-900 text-green-300' : 
-                          tx.type === 'Redemption' ? 'bg-purple-900 text-purple-300' :
+                          tx.type === 'Redemption' ? (tx.to === 'Burned' ? 'bg-red-900 text-red-300' : 'bg-purple-900 text-purple-300') :
                           'bg-blue-900 text-blue-300'
                         }`}>
-                          {tx.type}
+                          {tx.to === 'Burned' ? 'Burned' : tx.type}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-300 font-mono">
                         {tx.from === 'ZakatContract' || tx.from === 'Treasury' ? tx.from : formatTxHash(tx.from, 8)}
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-300 font-mono">
-                        {tx.to === 'ZakatContract' || tx.to.includes('Merchant') || tx.to.includes('Recipients') ? tx.to : formatTxHash(tx.to, 8)}
+                        {tx.to === 'ZakatContract' || tx.to === 'Burned' || tx.to.includes('Merchant') || tx.to.includes('Recipients') ? tx.to : formatTxHash(tx.to, 8)}
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-100 font-medium">
                         {tx.amount}
