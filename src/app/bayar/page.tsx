@@ -2,11 +2,12 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { CONTRACT_ADDRESS, RPC_URL } from '@/utils/config';
+import { CONTRACT_ADDRESS, RPC_URL, ZAKAT_NFT_CONTRACT_ADDRESS } from '@/utils/config';
 import { ethers } from 'ethers';
 
-// Import the ABI for the ZakatSystem contract
+// Import the ABIs for both contracts
 import contractAbi from '@/contracts/abi.json';
+import zakatNFTAbi from '@/contracts/ZakatNFTAbi.json';
 
 export default function BayarPage() {
   const [step, setStep] = useState(1);
@@ -17,12 +18,16 @@ export default function BayarPage() {
     jenisId: 'KAD PENGENALAN BARU',
     nomorId: '',
     telefon: '',
+    email: '',
     jenisZakat: 'ZAKAT PENDAPATAN',
     tahun: '2025',
     jumlah: ''
   });
   const [txHash, setTxHash] = useState('');
   const [txStatus, setTxStatus] = useState('');
+  const [nftStatus, setNftStatus] = useState('');
+  const [nftTxHash, setNftTxHash] = useState('');
+  const [receiptId, setReceiptId] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
@@ -315,7 +320,7 @@ export default function BayarPage() {
       // Create a wallet with the private key
       const wallet = new ethers.Wallet(privateKey, provider);
 
-      // Create the contract instance
+      // Create the contract instance for ZakatSystem
       const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, wallet);
 
       // Call the mintZakat function
@@ -329,6 +334,50 @@ export default function BayarPage() {
 
       if (receipt.status === 1) {
         setTxStatus('Success');
+        
+        // After successful transaction, mint the NFT receipt
+        try {
+          // Set NFT status
+          setNftStatus('Minting NFT receipt...');
+          
+          // Generate a receipt ID
+          const receiptId = `ZKT-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+          setReceiptId(receiptId);
+          
+          // Create the ZakatNFT contract instance
+          const nftContract = new ethers.Contract(ZAKAT_NFT_CONTRACT_ADDRESS, zakatNFTAbi, wallet);
+          
+          // Define token URI - in a real app, this would be an IPFS link to metadata
+          const tokenURI = `https://plum-tough-mongoose-147.mypinata.cloud/ipfs/bafybeiazkn4okxee2bnwvbcprhsk4rcujerkc5p2p7zkf3s5uj24b7rqia`;
+          
+          // Mint the NFT receipt
+          const nftTx = await nftContract.mintReceiptNFT(
+            receiptId,
+            formData.nama || 'MUHAMMAD HAZRIL FAHMI',
+            formData.nomorId || '031111010755',
+            formData.email || 'user@example.com',
+            formData.telefon || '1234567890',
+            formData.jenisZakat,
+            amount,
+            tx.hash,
+            tokenURI
+          );
+          
+          // Set NFT transaction hash
+          setNftTxHash(nftTx.hash);
+          
+          // Wait for the NFT transaction to be mined
+          await nftTx.wait();
+          
+          // Update NFT status
+          setNftStatus('NFT minted successfully');
+          console.log('NFT minted successfully');
+        } catch (nftError) {
+          console.error('Error minting NFT:', nftError);
+          setNftStatus('Failed to mint NFT');
+          // Continue with success status even if NFT minting fails
+        }
+        
         setStep(4);
       } else {
         setTxStatus('Failed');
@@ -367,14 +416,14 @@ export default function BayarPage() {
     const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (!printWindow) return;
 
-    const receiptId = `ZKT-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    const currentReceiptId = receiptId || `ZKT-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
     const currentDate = new Date().toLocaleDateString();
 
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Resit Zakat #${receiptId}</title>
+        <title>Resit Zakat #${currentReceiptId}</title>
         <style>
           body {
             font-family: Arial, sans-serif;
@@ -534,6 +583,46 @@ export default function BayarPage() {
             height: 14px;
             margin-left: 4px;
           }
+          .nft-info {
+            background-color: #F5F3FF;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 30px 0;
+            font-size: 14px;
+            border: 1px solid #DDD6FE;
+          }
+          .nft-info-title {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+          }
+          .nft-info-title svg {
+            margin-right: 8px;
+            color: #8B5CF6;
+          }
+          .nft-info-content {
+            padding: 10px;
+            background-color: white;
+            border-radius: 4px;
+            border: 1px solid #DDD6FE;
+          }
+          .nft-email {
+            font-weight: 600;
+            color: #7C3AED;
+            margin-top: 5px;
+            margin-bottom: 10px;
+          }
+          .nft-tx {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #DDD6FE;
+          }
+          .nft-tx p {
+            margin-bottom: 5px;
+            color: #6B7280;
+          }
           .print-button {
             background-color: #10B981;
             color: white;
@@ -590,40 +679,40 @@ export default function BayarPage() {
           </div>
           <div class="receipt-body">
             <div class="receipt-info">
-              <div class="receipt-info-block">
-                <div class="receipt-label">No. Resit</div>
-                <div class="receipt-value">${receiptId}</div>
+              <div className="receipt-info-block">
+                <div className="receipt-label">No. Resit</div>
+                <div className="receipt-value">${currentReceiptId}</div>
                 
                 <div style="margin-top: 15px; display: flex;">
                   <div style="margin-right: 30px;">
-                    <div class="receipt-label">Tarikh</div>
-                    <div class="receipt-value">${currentDate}</div>
+                    <div className="receipt-label">Tarikh</div>
+                    <div className="receipt-value">${currentDate}</div>
                   </div>
                   <div>
-                    <div class="receipt-label">Masa</div>
-                    <div class="receipt-value">${new Date().toLocaleTimeString()}</div>
+                    <div className="receipt-label">Masa</div>
+                    <div className="receipt-value">${new Date().toLocaleTimeString()}</div>
                   </div>
                 </div>
               </div>
               
-              <div class="receipt-info-block">
-                <div class="receipt-label">Pembayar</div>
-                <div class="receipt-value">${formData.nama || 'MUHAMMAD HAZRIL FAHMI'}</div>
+              <div className="receipt-info-block">
+                <div className="receipt-label">Pembayar</div>
+                <div className="receipt-value">${formData.nama || 'MUHAMMAD HAZRIL FAHMI'}</div>
                 
                 <div style="margin-top: 15px;">
-                  <div class="receipt-label">No. Pengenalan</div>
-                  <div class="receipt-value">${formData.nomorId || '031111010755'}</div>
+                  <div className="receipt-label">No. Pengenalan</div>
+                  <div className="receipt-value">${formData.nomorId || '031111010755'}</div>
                 </div>
                 
                 <div style="margin-top: 15px;">
-                  <div class="receipt-label">Telefon</div>
-                  <div class="receipt-value">+60${formData.telefon || '1234567890'}</div>
+                  <div className="receipt-label">Email</div>
+                  <div className="receipt-value">${formData.email || 'user@example.com'}</div>
                 </div>
               </div>
             </div>
             
             <h3 style="margin-bottom: 15px; color: #333;">Butiran Pembayaran</h3>
-            <table class="receipt-details">
+            <table className="receipt-details">
               <thead>
                 <tr>
                   <th>Butiran</th>
@@ -646,21 +735,21 @@ export default function BayarPage() {
               </tbody>
             </table>
             
-            <div class="receipt-total">
-              <div class="receipt-total-label">JUMLAH KESELURUHAN:</div>
-              <div class="receipt-total-value">RM ${formData.jumlah || '0.00'}</div>
+            <div className="receipt-total">
+              <div className="receipt-total-label">JUMLAH KESELURUHAN:</div>
+              <div className="receipt-total-value">RM ${formData.jumlah || '0.00'}</div>
             </div>
             
             ${txHash ? `
-            <div class="blockchain-info">
-              <div class="blockchain-info-title">
+            <div className="blockchain-info">
+              <div className="blockchain-info-title">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 Transaksi Blockchain
               </div>
-              <div class="blockchain-tx">${txHash}</div>
-              <a href="https://sepolia.scrollscan.com/tx/${txHash}" target="_blank" class="blockchain-link">
+              <div className="blockchain-tx">${txHash}</div>
+              <a href="https://sepolia.scrollscan.com/tx/${txHash}" target="_blank" className="blockchain-link">
                 Lihat di Block Explorer
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -669,11 +758,35 @@ export default function BayarPage() {
             </div>
             ` : ''}
             
-            <div class="success-indicator">
+            <div className="nft-info">
+              <div className="nft-info-title">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                </svg>
+                Resit NFT
+              </div>
+              <div className="nft-info-content">
+                <p>NFT receipt telah dimint ke alamat email:</p>
+                <p className="nft-email">${formData.email || 'user@example.com'}</p>
+                ${nftTxHash ? `
+                <div className="nft-tx">
+                  <p>NFT Transaction Hash:</p>
+                  <a href="https://sepolia.scrollscan.com/tx/${nftTxHash}" target="_blank" className="blockchain-link">
+                    ${nftTxHash}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+            
+            <div className="success-indicator">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <div class="success-text">Pembayaran Telah Disahkan</div>
+              <div className="success-text">Pembayaran Telah Disahkan</div>
             </div>
             
             <div style="text-align: center; margin-top: 10px;">
@@ -681,11 +794,11 @@ export default function BayarPage() {
               <p style="color: #666; margin-top: 5px;">Semoga Allah memberkati harta dan kehidupan anda.</p>
             </div>
             
-            <div class="receipt-footer">
+            <div className="receipt-footer">
               <p>© ${new Date().getFullYear()} ZakatPay™ - Sistem Pembayaran Zakat Digital</p>
             </div>
             
-            <button class="print-button" onclick="window.print(); setTimeout(function() { window.close(); }, 500);">
+            <button className="print-button" onclick="window.print(); setTimeout(function() { window.close(); }, 500);">
               Cetak Resit
             </button>
           </div>
@@ -835,6 +948,23 @@ export default function BayarPage() {
                   />
                 </div>
                 <p className="mt-1 text-xs text-gray-500">Contoh: 0123617045</p>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Alamat Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border text-gray-500 border-gray-300 rounded-md focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="email@example.com"
+                />
+                <p className="mt-1 text-xs text-gray-500">Resit pembayaran akan dihantar ke email ini</p>
               </div>
 
               {/* Jenis Zakat */}
@@ -1044,7 +1174,83 @@ export default function BayarPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-green-600 mb-2">Pembayaran Berjaya!</h2>
-            <p className="text-gray-600 mb-6">Pembayaran zakat anda telah berjaya diproses</p>
+            <p className="text-gray-600 mb-2">Pembayaran zakat anda telah berjaya diproses</p>
+            <p className="text-blue-600 mb-6 text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+              Resit NFT telah dimint ke alamat email anda
+            </p>
+            
+            {/* NFT Preview */}
+            <div className="max-w-xs mx-auto mb-6">
+              <div className="bg-gradient-to-r from-purple-500 to-indigo-600 p-1 rounded-lg shadow-lg">
+                <div className="bg-white p-3 rounded-md">
+                  <div className="mb-3 flex justify-between items-center">
+                    <div className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span className="font-bold text-purple-800">Zakat Receipt NFT</span>
+                    </div>
+                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                      {nftTxHash ? "Minted" : "Processing"}
+                    </span>
+                  </div>
+                  
+                  <div className="bg-gradient-to-br from-purple-100 to-indigo-100 p-4 rounded-md flex flex-col items-center">
+                    <div className="mb-3 w-16 h-16 bg-white rounded-full flex items-center justify-center border-2 border-purple-200">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-gray-800">{formData.jenisZakat}</p>
+                      <p className="text-xl font-bold text-purple-700 mt-1">RM {formData.jumlah || '0.00'}</p>
+                      <p className="text-xs text-gray-500 mt-1">{new Date().toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 text-xs text-gray-600">
+                    <div className="flex justify-between mb-1">
+                      <span>ID:</span>
+                      <span className="font-medium">{receiptId || `ZKT-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Pembayar:</span>
+                      <span className="font-medium">{formData.nama || 'MUHAMMAD HAZRIL FAHMI'}</span>
+                    </div>
+                  </div>
+                  
+                  {nftTxHash ? (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <a
+                        href={`https://sepolia.scrollscan.com/tx/${nftTxHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center text-xs text-purple-700 hover:text-purple-900 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        View on Blockchain
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="mt-3 pt-3 border-t border-gray-200 flex justify-center">
+                      <div className="flex items-center text-xs text-gray-500">
+                        <svg className="animate-spin h-3 w-3 mr-1 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Processing NFT transaction...
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
             <div className="bg-gray-50 rounded-lg p-6 max-w-md mx-auto border border-gray-200">
               <h3 className="font-semibold mb-4 text-gray-800">Butiran Pembayaran</h3>
               <div className="space-y-2 text-left">
@@ -1055,6 +1261,10 @@ export default function BayarPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">No. Pengenalan:</span>
                   <span className="font-medium text-gray-500">{formData.nomorId || '031111010755'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Email:</span>
+                  <span className="font-medium text-gray-500">{formData.email || 'user@example.com'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Jenis Zakat:</span>
@@ -1070,7 +1280,7 @@ export default function BayarPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">No. Resit:</span>
-                  <span className="font-medium text-gray-500">ZKT-{Math.floor(Math.random() * 10000).toString().padStart(4, '0')}</span>
+                  <span className="font-medium text-gray-500">{receiptId || `ZKT-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`}</span>
                 </div>
                 {txHash && (
                   <div className="flex flex-col mt-3 pt-3 border-t border-gray-200">
@@ -1081,12 +1291,9 @@ export default function BayarPage() {
                         href={`https://sepolia.scrollscan.com/tx/${txHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors flex items-center"
+                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                        View
+                        View on Explorer
                       </a>
                     </div>
                   </div>
@@ -1125,6 +1332,18 @@ export default function BayarPage() {
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Transaksi Sedang Diproses</h3>
                 <p className="text-gray-600 text-center mb-2">Pembayaran zakat anda sedang direkodkan di blockchain</p>
+                
+                {/* NFT minting message */}
+                <div className="flex items-center bg-purple-50 text-purple-800 text-sm px-4 py-2 rounded-md mt-2 mb-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                  </svg>
+                  <span>
+                    {nftStatus || "Resit NFT sedang dimint ke "}
+                    {!nftStatus && <span className="font-medium">{formData.email || 'email anda'}</span>}
+                  </span>
+                </div>
+                
                 {txHash && (
                   <div className="text-xs text-gray-500 mt-2 bg-gray-50 p-3 rounded w-full">
                     <p className="font-medium mb-1">Transaction Hash:</p>
@@ -1135,6 +1354,23 @@ export default function BayarPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
+                      >
+                        View on Explorer
+                      </a>
+                    </div>
+                  </div>
+                )}
+                
+                {nftTxHash && (
+                  <div className="text-xs text-gray-500 mt-2 bg-purple-50 p-3 rounded w-full">
+                    <p className="font-medium mb-1">NFT Transaction:</p>
+                    <div className="flex items-center">
+                      <p className="truncate text-purple-600 mr-2">{nftTxHash.slice(0, 10)}...{nftTxHash.slice(-8)}</p>
+                      <a
+                        href={`https://sepolia.scrollscan.com/tx/${nftTxHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 transition-colors"
                       >
                         View on Explorer
                       </a>
@@ -1225,7 +1461,7 @@ export default function BayarPage() {
                   <p className="text-lg mt-2 font-medium">RESIT PEMBAYARAN ZAKAT</p>
                   <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                 </div>
@@ -1258,8 +1494,8 @@ export default function BayarPage() {
                       </div>
 
                       <div className="mt-4">
-                        <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Telefon</p>
-                        <p className="font-medium text-gray-800">+60{formData.telefon || '1234567890'}</p>
+                        <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Email</p>
+                        <p className="font-medium text-gray-800">{formData.email || 'user@example.com'}</p>
                       </div>
                     </div>
                   </div>
@@ -1321,6 +1557,35 @@ export default function BayarPage() {
                       </a>
                     </div>
                   )}
+
+                  <div className="mt-8 bg-purple-50 p-5 rounded-lg border border-purple-100">
+                    <div className="flex items-center mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                      </svg>
+                      <p className="font-semibold text-gray-800">Resit NFT</p>
+                    </div>
+                    <div className="bg-white p-3 rounded border border-purple-100 mb-2">
+                      <p className="text-sm text-gray-700">Resit NFT telah dihantar ke alamat email anda:</p>
+                      <p className="font-medium text-purple-700 mt-1">{formData.email || 'user@example.com'}</p>
+                    </div>
+                    {nftTxHash && (
+                      <div className="bg-white p-3 rounded border border-purple-100 mb-2">
+                        <p className="text-sm text-gray-700">Transaksi NFT:</p>
+                        <a
+                          href={`https://sepolia.scrollscan.com/tx/${nftTxHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-xs text-purple-700 hover:text-purple-900 mt-1 break-all"
+                        >
+                          {nftTxHash}
+                        </a>
+                      </div>
+                    )}
+                    <p className="text-sm text-gray-600 mt-2">
+                      Resit NFT anda boleh digunakan sebagai bukti pembayaran zakat dan layak untuk mendapatkan rebat cukai pendapatan.
+                    </p>
+                  </div>
 
                   <div className="mt-8 text-center">
                     <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100 inline-block">
