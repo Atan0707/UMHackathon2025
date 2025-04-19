@@ -51,7 +51,7 @@ export default function CheckBalance() {
       // Set the recipient data including name and token amount
       setRecipientData({
         name: recipient.name,
-        balance: parseFloat(ethers.formatEther(recipient.tokenAmount || 0)).toFixed(2)
+        balance: parseFloat(ethers.formatUnits(recipient.tokenAmount || 0, 4)).toFixed(2)
       });
 
     } catch (err) {

@@ -53,7 +53,7 @@ export default function Withdraw() {
       }
 
       // Format the balance to display with 2 decimal places
-      const formattedBalance = parseFloat(ethers.formatEther(merchant.tokenBalance || 0)).toFixed(2);
+      const formattedBalance = parseFloat(ethers.formatUnits(merchant.tokenBalance || 0, 4)).toFixed(2);
 
       // Set the merchant data including name and token balance
       setMerchantData({
@@ -81,7 +81,7 @@ export default function Withdraw() {
     setShowCompletionMessage(false);
     setIsWithdrawing(true);
     setProcessingStage("processing");
-    
+
     // Start progress animation
     setProcessProgress(0);
     const progressInterval = setInterval(() => {
@@ -93,7 +93,7 @@ export default function Withdraw() {
 
     try {
       const withdrawAmountValue = parseFloat(withdrawAmount);
-      
+
       // Validate withdraw amount
       if (isNaN(withdrawAmountValue) || withdrawAmountValue <= 0) {
         setError("Please enter a valid amount to withdraw");
@@ -104,7 +104,7 @@ export default function Withdraw() {
       }
 
       const merchantBalance = parseFloat(merchantData?.balance || "0");
-      
+
       if (withdrawAmountValue > merchantBalance) {
         setError("Withdrawal amount exceeds available balance");
         setIsWithdrawing(false);
@@ -129,26 +129,26 @@ export default function Withdraw() {
       // Create the contract instance
       const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi, wallet);
 
-      // Convert amount to wei (tokens have 18 decimals)
-      const amountInWei = ethers.parseEther(withdrawAmount);
+      // Convert amount to wei (tokens have 4 decimals)
+      const amountInWei = ethers.parseUnits(withdrawAmount, 4);
 
       // Call the claimShopOwnerTokens function
       const tx = await contract.claimShopOwnerTokens(merchantId, amountInWei);
-      
+
       // Store transaction hash
       setTxHash(tx.hash);
-      
+
       // Wait for transaction to be mined
       await tx.wait();
 
       // Set progress to 100% and complete processing
       setProcessProgress(100);
       setProcessingStage("completed");
-      
+
       // Update merchant data after successful withdrawal
       const updatedMerchant = await contract.shopOwners(merchantId);
-      const updatedBalance = parseFloat(ethers.formatEther(updatedMerchant.tokenBalance || 0)).toFixed(2);
-      
+      const updatedBalance = parseFloat(ethers.formatUnits(updatedMerchant.tokenBalance || 0, 4)).toFixed(2);
+
       setMerchantData({
         name: updatedMerchant.name,
         balance: updatedBalance
@@ -338,7 +338,7 @@ export default function Withdraw() {
                       {error}
                     </div>
                   )}
-                  
+
                   {success && (
                     <div className="mt-3 p-4 bg-emerald-900/30 border border-emerald-800 rounded-lg text-emerald-400 text-sm animate-fade-in">
                       <div className="flex items-center mb-2">
@@ -347,7 +347,7 @@ export default function Withdraw() {
                         </svg>
                         <span>{success}</span>
                       </div>
-                      
+
                       {txHash && (
                         <div className="mb-2 overflow-hidden">
                           <p className="text-xs text-gray-400 mb-1">Transaction Hash:</p>
@@ -367,7 +367,7 @@ export default function Withdraw() {
                           </div>
                         </div>
                       )}
-                      
+
                       {showCompletionMessage && (
                         <div className="mt-3 text-sm border-t border-emerald-800 pt-3 animate-fade-in">
                           <p className="font-medium">We have received your withdrawal request.</p>
@@ -381,7 +381,7 @@ export default function Withdraw() {
             )}
           </div>
         </div>
-        
+
         {/* Processing Modal Overlay */}
         {processingStage === "processing" && (
           <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
@@ -395,7 +395,7 @@ export default function Withdraw() {
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-white">Processing Withdrawal</h3>
                 <p className="text-gray-300 text-center mb-4">Your withdrawal request is being processed on the blockchain</p>
-                
+
                 {txHash && (
                   <div className="text-xs text-gray-400 mt-2 bg-gray-900/50 p-3 rounded w-full mb-4">
                     <p className="font-medium mb-1">Transaction Hash:</p>
@@ -412,10 +412,10 @@ export default function Withdraw() {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="mt-2 w-full bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-emerald-500 h-2 rounded-full progress-animate" 
+                  <div
+                    className="bg-emerald-500 h-2 rounded-full progress-animate"
                     style={{ width: `${processProgress}%` }}
                   ></div>
                 </div>
@@ -437,8 +437,8 @@ export default function Withdraw() {
                 <h3 className="text-xl font-semibold mb-2 text-white">Withdrawal Successful!</h3>
                 <p className="text-gray-300 text-center mb-2">Your withdrawal of {withdrawAmount} ZKT has been processed</p>
                 <p className="text-gray-400 text-center text-sm mb-4">Funds will be credited to your bank account within 7 days</p>
-                
-                <button 
+
+                <button
                   onClick={() => setProcessingStage("initial")}
                   className="mt-2 px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
                 >

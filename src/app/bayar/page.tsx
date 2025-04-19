@@ -30,11 +30,11 @@ export default function BayarPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'jumlah') {
       // Clear any previous error
       setPaymentError('');
-      
+
       // Validate amount for 'jumlah' field
       if (value && !isNaN(parseFloat(value))) {
         const amount = parseFloat(value);
@@ -45,7 +45,7 @@ export default function BayarPage() {
         }
       }
     }
-    
+
     setFormData({
       ...formData,
       [name]: value
@@ -61,7 +61,7 @@ export default function BayarPage() {
         return;
       }
     }
-    
+
     if (step === 3) {
       const bankWindow = window.open('', '_blank', 'width=500,height=600');
       if (bankWindow) {
@@ -300,7 +300,7 @@ export default function BayarPage() {
       setTxStatus('Processing...');
 
       // Convert the jumlah (amount) to wei (assuming it's in RM)
-      const amount = ethers.parseEther(formData.jumlah || '0');
+      const amount = ethers.parseUnits(formData.jumlah || '0', 4);
 
       // Create provider and connect to the network
       const provider = new ethers.JsonRpcProvider(RPC_URL);
@@ -671,7 +671,7 @@ export default function BayarPage() {
             
             <div class="success-indicator">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div class="success-text">Pembayaran Telah Disahkan</div>
             </div>
@@ -693,7 +693,7 @@ export default function BayarPage() {
       </body>
       </html>
     `);
-    
+
     printWindow.document.close();
   };
 
@@ -1101,7 +1101,7 @@ export default function BayarPage() {
                 )}
               </div>
             </div>
-            <button 
+            <button
               className="mt-6 px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center justify-center"
               onClick={downloadReceipt}
             >
@@ -1199,7 +1199,7 @@ export default function BayarPage() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-gray-800">Resit Pembayaran Zakat</h3>
-                <button 
+                <button
                   onClick={() => setIsReceiptModalOpen(false)}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -1208,9 +1208,9 @@ export default function BayarPage() {
                   </svg>
                 </button>
               </div>
-              
-              <div 
-                ref={receiptRef} 
+
+              <div
+                ref={receiptRef}
                 className="bg-white rounded-lg border border-gray-200 overflow-hidden mt-4"
               >
                 <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white p-8 text-center relative">
@@ -1229,13 +1229,13 @@ export default function BayarPage() {
                     </svg>
                   </div>
                 </div>
-                
+
                 <div className="p-6 md:p-8">
                   <div className="flex flex-col md:flex-row justify-between mb-8 border-b border-gray-100 pb-6">
                     <div className="mb-4 md:mb-0 bg-gray-50 p-4 rounded-lg flex-1 mr-0 md:mr-4">
                       <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Nombor Resit</p>
                       <p className="font-medium text-gray-800 text-lg">ZKT-{Math.floor(Math.random() * 10000).toString().padStart(4, '0')}</p>
-                      
+
                       <div className="flex items-center mt-4">
                         <div className="mr-6">
                           <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Tarikh</p>
@@ -1247,23 +1247,23 @@ export default function BayarPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="bg-gray-50 p-4 rounded-lg flex-1">
                       <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Pembayar</p>
                       <p className="font-medium text-gray-800 text-lg">{formData.nama || 'MUHAMMAD HAZRIL FAHMI'}</p>
-                      
+
                       <div className="mt-4">
                         <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">No. Pengenalan</p>
                         <p className="font-medium text-gray-800">{formData.nomorId || '031111010755'}</p>
                       </div>
-                      
+
                       <div className="mt-4">
                         <p className="text-gray-500 text-sm uppercase tracking-wider mb-1">Telefon</p>
                         <p className="font-medium text-gray-800">+60{formData.telefon || '1234567890'}</p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mb-8">
                     <h3 className="text-lg font-medium text-gray-800 mb-4">Butiran Pembayaran</h3>
                     <div className="overflow-hidden rounded-xl border border-gray-200">
@@ -1291,14 +1291,14 @@ export default function BayarPage() {
                       </table>
                     </div>
                   </div>
-                  
+
                   <div className="mt-6 pt-4 border-t border-gray-200">
                     <div className="flex justify-between items-center">
                       <p className="text-gray-600 font-medium">JUMLAH KESELURUHAN:</p>
                       <p className="text-right font-bold text-xl text-emerald-700">RM {formData.jumlah || '0.00'}</p>
                     </div>
                   </div>
-                  
+
                   {txHash && (
                     <div className="mt-8 bg-blue-50 p-5 rounded-lg border border-blue-100">
                       <div className="flex items-center mb-2">
@@ -1308,7 +1308,7 @@ export default function BayarPage() {
                         <p className="font-semibold text-gray-800">Transaksi Blockchain</p>
                       </div>
                       <p className="text-blue-600 font-mono text-sm break-all bg-white p-3 rounded border border-blue-100">{txHash}</p>
-                      <a 
+                      <a
                         href={`https://sepolia.scrollscan.com/tx/${txHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -1321,7 +1321,7 @@ export default function BayarPage() {
                       </a>
                     </div>
                   )}
-                  
+
                   <div className="mt-8 text-center">
                     <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100 inline-block">
                       <svg className="w-8 h-8 text-emerald-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -1332,13 +1332,13 @@ export default function BayarPage() {
                     <p className="mt-4 text-gray-600">Terima kasih atas pembayaran zakat anda.</p>
                     <p className="mt-1 text-gray-600">Semoga Allah memberkati harta dan kehidupan anda.</p>
                   </div>
-                  
+
                   <div className="mt-10 pt-6 border-t border-gray-200 text-center">
                     <p className="text-sm text-gray-500">© {new Date().getFullYear()} ZakatPay™ - Sistem Pembayaran Zakat Digital</p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="mt-6 flex justify-center">
                 <button
                   onClick={handlePrintReceipt}

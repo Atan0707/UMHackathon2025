@@ -156,10 +156,10 @@ export default function LiveLedger() {
       const collected = distributed + undistributed;
 
       // Format values (divide by 10^18 for 18 decimals and format with 2 decimal places)
-      const formattedCollected = parseFloat(ethers.formatEther(collected)).toLocaleString('en-MY',
+      const formattedCollected = parseFloat(ethers.formatUnits(collected, 4)).toLocaleString('en-MY',
         { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-      const formattedDistributed = parseFloat(ethers.formatEther(distributed)).toLocaleString('en-MY',
+      const formattedDistributed = parseFloat(ethers.formatUnits(distributed, 4)).toLocaleString('en-MY',
         { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
       setTotalCollected(formattedCollected);
@@ -181,13 +181,13 @@ export default function LiveLedger() {
         // Fetch main transaction data
         const response = await request<GraphQLResponse>(SUBGRAPH_URL, GET_TRANSACTIONS);
         console.log('GraphQL Response:', response);
-        
+
         // Fetch burned tokens separately
         let burnedTokens: Transfer[] = [];
         try {
-          const burnedResponse = await request<{transfers: Transfer[]}>(SUBGRAPH_URL, GET_BURNED_TOKENS);
+          const burnedResponse = await request<{ transfers: Transfer[] }>(SUBGRAPH_URL, GET_BURNED_TOKENS);
           burnedTokens = burnedResponse.transfers || [];
-          
+
           // Calculate total burned tokens with a safer approach
           let burnedTokensTotal = 0;
           if (Array.isArray(burnedTokens)) {
@@ -204,8 +204,8 @@ export default function LiveLedger() {
               }
             }
           }
-          
-          const formattedBurned = (burnedTokensTotal / 1e18).toLocaleString('en-MY', 
+
+          const formattedBurned = (burnedTokensTotal / 1e4).toLocaleString('en-MY',
             { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           setTotalBurned(formattedBurned);
         } catch (err) {
@@ -214,16 +214,16 @@ export default function LiveLedger() {
           // Continue with empty burnedTokens array
           burnedTokens = [];
         }
-        
+
         // Process and merge transaction data
         let processedTxHashes = new Set<string>();
-        
+
         // Ensure we have valid arrays for our lookups
         const recipientAddeds = response.recipientAddeds || [];
         const shopOwnerAddeds = response.shopOwnerAddeds || [];
-        
+
         // First process burned tokens so they take priority
-        const burnedTransactions: Transaction[] = Array.isArray(burnedTokens) 
+        const burnedTransactions: Transaction[] = Array.isArray(burnedTokens)
           ? burnedTokens
             .filter(tx => tx && typeof tx === 'object' && 'transactionHash' in tx)
             .map((tx: Transfer): Transaction => {
@@ -231,14 +231,14 @@ export default function LiveLedger() {
               if (tx.transactionHash) {
                 processedTxHashes.add(tx.transactionHash);
               }
-              
+
               // Try to find the shop owner name from shopOwnerAddeds (the from address)
               let fromDisplay = tx.from || '';
-              const shopOwner = shopOwnerAddeds.find(s => 
-                s.internal_id.toLowerCase() === fromDisplay.toLowerCase() || 
+              const shopOwner = shopOwnerAddeds.find(s =>
+                s.internal_id.toLowerCase() === fromDisplay.toLowerCase() ||
                 CONTRACT_ADDRESS.toLowerCase() === fromDisplay.toLowerCase()
               );
-              
+
               if (shopOwner) {
                 fromDisplay = shopOwner.name;
               } else if (fromDisplay === CONTRACT_ADDRESS) {
@@ -246,18 +246,18 @@ export default function LiveLedger() {
               } else {
                 fromDisplay = formatTxHash(fromDisplay, 8);
               }
-              
+
               return {
                 txHash: tx.transactionHash || '',
                 dateTime: tx.blockTimestamp ? new Date(Number(tx.blockTimestamp) * 1000).toISOString() : new Date().toISOString(),
                 type: 'Burned',
                 from: fromDisplay,
                 to: 'Lembaga Zakat',
-                amount: tx.value ? (Number(tx.value) / 1e18).toFixed(2) : '0.00'
+                amount: tx.value ? (Number(tx.value) / 1e4).toFixed(2) : '0.00'
               };
-            }) 
+            })
           : [];
-        
+
         // Process other transaction types, skipping those with hash already in processedTxHashes
         const allTransactions: Transaction[] = [
           // Map TokenClaimed events to Distribution transactions
@@ -265,29 +265,29 @@ export default function LiveLedger() {
             .filter(tx => !processedTxHashes.has(tx.transactionHash))
             .map((tx: TokenClaimed) => {
               processedTxHashes.add(tx.transactionHash);
-              
+
               // For privacy, always display "Penerima" for recipients
               const toDisplay = "Penerima";
-              
+
               return {
                 txHash: tx.transactionHash,
                 dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
                 type: 'Distribution' as const,
                 from: 'ZakatContract',
                 to: toDisplay,
-                amount: (Number(tx.amount) / 1e18).toFixed(2)
+                amount: (Number(tx.amount) / 1e4).toFixed(2)
               };
             }),
-          
+
           // Map TokenSpent events to Payment transactions
           ...(response.tokenSpents || [])
             .filter(tx => !processedTxHashes.has(tx.transactionHash))
             .map((tx: TokenSpent) => {
               processedTxHashes.add(tx.transactionHash);
-              
+
               // For privacy, always display "Penerima" for recipients
               const fromDisplay = "Penerima";
-              
+
               // Try to find the shop owner name from shopOwnerAddeds
               let toDisplay = tx.shopOwnerId;
               const shopOwner = shopOwnerAddeds.find(s => s.internal_id === tx.shopOwnerId);
@@ -298,17 +298,17 @@ export default function LiveLedger() {
               } else if (tx.shopOwnerId.match(/^0x[0-9a-f]{40}$/i)) {
                 toDisplay = formatTxHash(tx.shopOwnerId, 8);
               }
-              
+
               return {
                 txHash: tx.transactionHash,
                 dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
                 type: 'Payment' as const,
                 from: fromDisplay,
                 to: toDisplay,
-                amount: (Number(tx.amount) / 1e18).toFixed(2)
+                amount: (Number(tx.amount) / 1e4).toFixed(2)
               };
             }),
-          
+
           // Map ZakatDistributed events to Distribution transactions (to all recipients)
           ...(response.zakatDistributeds || [])
             .filter(tx => !processedTxHashes.has(tx.transactionHash))
@@ -320,10 +320,10 @@ export default function LiveLedger() {
                 type: 'Distribution' as const,
                 from: 'ZakatContract',
                 to: 'Penerima',
-                amount: (Number(tx.totalAmount) / 1e18).toFixed(2)
+                amount: (Number(tx.totalAmount) / 1e4).toFixed(2)
               };
             }),
-          
+
           // Map Transfer events from zero address (minting) to Mint transactions
           ...(response.transfers || [])
             .filter(tx => !processedTxHashes.has(tx.transactionHash))
@@ -335,19 +335,19 @@ export default function LiveLedger() {
                 type: 'Mint' as const,
                 from: 'Lembaga Zakat',
                 to: 'ZakatContract',
-                amount: (Number(tx.value) / 1e18).toFixed(2)
+                amount: (Number(tx.value) / 1e4).toFixed(2)
               };
             }),
-          
+
           // Add the burned transactions first
           ...burnedTransactions
         ];
-        
+
         // Sort by date, newest first
-        const sortedTransactions = allTransactions.sort((a, b) => 
+        const sortedTransactions = allTransactions.sort((a, b) =>
           new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()
         );
-        
+
         console.log('Processed transactions:', sortedTransactions);
         return sortedTransactions;
       } catch (err) {
@@ -358,26 +358,26 @@ export default function LiveLedger() {
     // Poll every 30 seconds for new transactions
     refetchInterval: 30000
   });
-  
+
   // Fetch both dashboard and transaction data on mount
   useEffect(() => {
     refetch();
     fetchZakatData();
-    
+
     // Set up interval to refresh data every 60 seconds
     const interval = setInterval(() => {
       refetch();
       fetchZakatData();
     }, 60000);
-    
+
     // Clean up interval on unmount
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
+
   // Check if we have any transactions
   const hasTransactions = data && data.length > 0;
-  
+
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -413,7 +413,7 @@ export default function LiveLedger() {
                 <div className="text-3xl font-medium text-gray-100">RM {totalDistributed}</div>
               )}
             </div>
-            
+
             {/* Burned Tokens (Redeemed by Merchants) */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-5 text-center">
               <div className="text-gray-400 text-sm mb-2">Jumlah Token Dituntut</div>
@@ -442,8 +442,8 @@ export default function LiveLedger() {
             <div className="text-red-400 text-center py-10">
               <p>Failed to load transaction data.</p>
               <p className="text-xs mt-2 opacity-70">Error: {error instanceof Error ? error.message : 'Unknown error'}</p>
-              <button 
-                onClick={() => refetch()} 
+              <button
+                onClick={() => refetch()}
                 className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded text-sm"
               >
                 Retry
@@ -455,8 +455,8 @@ export default function LiveLedger() {
               <p className="text-gray-400 text-sm">
                 Transactions will appear here once they are processed on the blockchain.
               </p>
-              <button 
-                onClick={() => refetch()} 
+              <button
+                onClick={() => refetch()}
                 className="mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded text-sm"
               >
                 Refresh
@@ -479,7 +479,7 @@ export default function LiveLedger() {
                   {data.map((tx, index) => (
                     <tr key={index} className={`border-t border-gray-700 ${index % 2 === 0 ? 'bg-gray-800' : 'bg-gray-750'} hover:bg-gray-700`}>
                       <td className="py-3 px-4 text-gray-300 font-mono text-xs">
-                        <a 
+                        <a
                           href={`https://sepolia.scrollscan.com/tx/${tx.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -492,12 +492,11 @@ export default function LiveLedger() {
                         {formatDate(tx.dateTime)}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-block px-2 py-1 text-xs rounded ${
-                          tx.type === 'Distribution' ? 'bg-green-900 text-green-300' : 
+                        <span className={`inline-block px-2 py-1 text-xs rounded ${tx.type === 'Distribution' ? 'bg-green-900 text-green-300' :
                           tx.type === 'Burned' ? 'bg-red-900 text-red-300' :
-                          tx.type === 'Payment' ? 'bg-purple-900 text-purple-300' :
-                          'bg-blue-900 text-blue-300'
-                        }`}>
+                            tx.type === 'Payment' ? 'bg-purple-900 text-purple-300' :
+                              'bg-blue-900 text-blue-300'
+                          }`}>
                           {tx.type === 'Burned' ? 'CONVERT TO FIAT' : tx.type}
                         </span>
                       </td>

@@ -36,8 +36,9 @@ interface CartItem extends Product {
 const productData: { [key: string]: Product } = {
     'A01': { id: 'A01', name: 'Water', price: 2 },
     'A02': { id: 'A02', name: 'Chicken', price: 14 },
-    'A03': { id: 'A03', name: 'Meat', price: 30 },
-    'A04': { id: 'A04', name: 'Cigarette', price: 20 },
+    'A03': { id: 'A03', name: 'Rice', price: 30 },
+    'A04': { id: 'A04', name: 'Meat', price: 20 },
+    'A05': { id: 'A05', name: 'Alcohol', price: 20 },
 };
 
 // Blockchain configuration
@@ -234,7 +235,7 @@ export default function Home() {
                 throw new Error("One or more items in your cart are not allowed for purchase with Zakat tokens.");
             }
 
-            const amount = ethers.parseEther(totalPrice.toString() || '0');
+            const amount = ethers.parseUnits(totalPrice.toString() || '4', 4);
 
             // Create a wallet with the private key
             const wallet = new ethers.Wallet(privateKey, provider);

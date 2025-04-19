@@ -79,9 +79,9 @@ const AgihZakat = () => {
       setContractStats({
         totalRecipients: Number(totalRecipients),
         totalShopOwners: Number(totalShopOwners),
-        undistributedTokens: ethers.formatEther(undistributedTokens),
+        undistributedTokens: ethers.formatUnits(undistributedTokens, 4),
         isDistributed: isDistributed,
-        totalDistributed: ethers.formatEther(totalDistributed)
+        totalDistributed: ethers.formatUnits(totalDistributed, 4)
       });
     } catch (error) {
       console.error("Error fetching contract stats:", error);
