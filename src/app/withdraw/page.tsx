@@ -290,7 +290,7 @@ export default function Withdraw() {
             Merchant Withdrawal
           </h1>
           <p className="text-lg text-gray-300 text-center max-w-2xl mb-12">
-            Redeem your ZKT tokens for fiat currency
+            Tukar Ke Ringgit token ZKT anda
           </p>
 
           <div className="w-full max-w-md bg-gray-800/30 backdrop-blur-md rounded-xl p-8 shadow-lg border border-gray-700/50">

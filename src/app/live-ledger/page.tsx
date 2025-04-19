@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 interface Transaction {
   txHash: string;
   dateTime: string;
-  type: 'Distribution' | 'Payment' | 'Mint' | 'Burned';
+  type: 'Pengagihan Zakat' | 'Pembelian' | 'Pembayaran Zakat' | 'Burned';
   from: string;
   to: string;
   amount: string;
@@ -283,7 +283,7 @@ export default function LiveLedger() {
               return {
                 txHash: tx.transactionHash,
                 dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
-                type: 'Distribution' as const,
+                type: 'Pengagihan Zakat' as const,
                 from: 'ZakatContract',
                 to: toDisplay,
                 amount: (Number(tx.amount) / 1e4).toFixed(2)
@@ -313,7 +313,7 @@ export default function LiveLedger() {
               return {
                 txHash: tx.transactionHash,
                 dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
-                type: 'Payment' as const,
+                type: 'Pembelian' as const,
                 from: fromDisplay,
                 to: toDisplay,
                 amount: (Number(tx.amount) / 1e4).toFixed(2)
@@ -328,7 +328,7 @@ export default function LiveLedger() {
               return {
                 txHash: tx.transactionHash,
                 dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
-                type: 'Distribution' as const,
+                type: 'Pengagihan Zakat' as const,
                 from: 'ZakatContract',
                 to: 'Penerima',
                 amount: (Number(tx.totalAmount) / 1e4).toFixed(2)
@@ -343,7 +343,7 @@ export default function LiveLedger() {
               return {
                 txHash: tx.transactionHash,
                 dateTime: new Date(Number(tx.blockTimestamp) * 1000).toISOString(),
-                type: 'Mint' as const,
+                type: 'Pembayaran Zakat' as const,
                 from: 'Lembaga Zakat',
                 to: 'ZakatContract',
                 amount: (Number(tx.value) / 1e4).toFixed(2)
@@ -623,12 +623,12 @@ export default function LiveLedger() {
                       </td>
                       <td className="py-3 px-4">
                         <span className={`inline-block px-2 py-0.5 text-xs rounded-sm ${
-                          tx.type === 'Distribution' ? 'text-green-300' :
+                          tx.type === 'Pengagihan Zakat' ? 'text-green-300' :
                           tx.type === 'Burned' ? 'text-red-300' :
-                          tx.type === 'Payment' ? 'text-purple-300' :
+                          tx.type === 'Pembelian' ? 'text-purple-300' :
                           'text-blue-300'
                         }`}>
-                          {tx.type === 'Burned' ? 'CONVERT TO FIAT' : tx.type}
+                          {tx.type === 'Burned' ? 'Tukar Ke Ringgit' : tx.type}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-300 font-mono">
