@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { CONTRACT_ADDRESS, RPC_URL, ZAKAT_NFT_CONTRACT_ADDRESS } from '@/utils/config';
@@ -36,6 +35,7 @@ export default function BayarPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
 
     if (name === 'jumlah') {
       // Clear any previous error
@@ -393,6 +393,7 @@ export default function BayarPage() {
             if (emailResponse.ok) {
               // Set notification state to show to user
               setEmailStatus('Email resit telah berjaya dihantar ke alamat email anda');
+              console.log(emailStatus)
             } else {
               setEmailStatus('Email resit tidak dapat dihantar, tetapi anda masih boleh melihat resit anda di sini');
             }

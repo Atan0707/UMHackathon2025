@@ -21,6 +21,14 @@ interface NDEFErrorEvent {
     message?: string;
 }
 
+// Define NDEFReader with overloaded methods
+interface NDEFReader {
+    scan: (options?: { signal?: AbortSignal }) => Promise<void>;
+    addEventListener(type: "reading", listener: (event: NDEFReadingEvent) => void, options?: { signal?: AbortSignal }): void;
+    addEventListener(type: "error", listener: (event: NDEFErrorEvent) => void, options?: { signal?: AbortSignal }): void;
+    removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
+}
+
 interface Product {
     id: string;
     name: string;
@@ -77,7 +85,7 @@ export default function Home() {
     const hasUnallowedItems = unallowedItems.length > 0;
 
     // Add an NFC reader reference
-    const ndefReaderRef = useRef<any>(null);
+    const ndefReaderRef = useRef<NDEFReader | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     // Fetch allowed items from blockchain
@@ -151,31 +159,34 @@ export default function Home() {
 
             // @ts-expect-error - TypeScript might not have NDEFReader types
             ndefReaderRef.current = new NDEFReader();
-            await ndefReaderRef.current.scan({ signal });
+            
+            if (ndefReaderRef.current) {
+                await ndefReaderRef.current.scan({ signal });
 
-            ndefReaderRef.current.addEventListener("reading", ({ message }: NDEFReadingEvent) => {
-                // Process all records from the message
-                for (const record of message.records) {
-                    if (record.recordType === "text") {
-                        const textDecoder = new TextDecoder(record.encoding || 'utf-8');
-                        const data = textDecoder.decode(record.data);
+                ndefReaderRef.current.addEventListener("reading", ({ message }: NDEFReadingEvent) => {
+                    // Process all records from the message
+                    for (const record of message.records) {
+                        if (record.recordType === "text") {
+                            const textDecoder = new TextDecoder(record.encoding || 'utf-8');
+                            const data = textDecoder.decode(record.data);
 
-                        if (mode === 'product') {
-                            processProductScan(data);
-                        } else if (mode === 'payment') {
-                            processPayment(data);
+                            if (mode === 'product') {
+                                processProductScan(data);
+                            } else if (mode === 'payment') {
+                                processPayment(data);
+                            }
                         }
                     }
-                }
 
-                setReadStatus('idle');
-            }, { signal });
+                    setReadStatus('idle');
+                }, { signal });
 
-            ndefReaderRef.current.addEventListener("error", (error: NDEFErrorEvent) => {
-                console.error(error);
-                setReadStatus('error');
-                setReadErrorMessage(error.message || 'Failed to read NFC tag');
-            }, { signal });
+                ndefReaderRef.current.addEventListener("error", (error: NDEFErrorEvent) => {
+                    console.error(error);
+                    setReadStatus('error');
+                    setReadErrorMessage(error.message || 'Failed to read NFC tag');
+                }, { signal });
+            }
 
         } catch (error) {
             console.error(error);

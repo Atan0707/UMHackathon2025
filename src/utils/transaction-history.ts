@@ -35,6 +35,7 @@ export const formatDate = (dateTimeString: string): string => {
       hour12: true
     });
   } catch (e) {
+    console.error('Error formatting date:', e);
     return dateTimeString;
   }
 };

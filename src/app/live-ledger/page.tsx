@@ -157,7 +157,7 @@ export default function LiveLedger() {
 
       // Get distributed and undistributed amounts
 
-      const distributedd = await contract.getTotalDistributedTokens();
+      // const distributedd = await contract.getTotalDistributedTokens();
       const undistributed = await contract.getUndistributedTokens();
       const recipientCount = await contract.getTotalRecipients();
       const shopOwnerCount = await contract.getTotalShopOwners();
@@ -227,10 +227,10 @@ export default function LiveLedger() {
         }
 
         // Process and merge transaction data
-        let processedTxHashes = new Set<string>();
+        const processedTxHashes = new Set<string>();
 
         // Ensure we have valid arrays for our lookups
-        const recipientAddeds = response.recipientAddeds || [];
+        // const recipientAddeds = response.recipientAddeds || [];
         const shopOwnerAddeds = response.shopOwnerAddeds || [];
 
         // First process burned tokens so they take priority
