@@ -11,9 +11,9 @@ const projectId = WALLETCONNECT_PROJECT_ID;
 
 // 2. Create a metadata object
 const metadata = {
-  name: "Blocknogotchi",
-  description: "Blocknogotchi",
-  url: "https://blocknogotchi.fun/", // origin must match your domain & subdomain
+  name: "ZakatChain",
+  description: "ZakatChain",
+  url: "https://zakatchain.vercel.app/", // origin must match your domain & subdomain
   icons: ["https://blocknogotchi.fun/favicon.ico"], // Updated to use your favicon
 };
 

@@ -192,7 +192,7 @@ contract ZakatSystem is ERC20, Ownable, ReentrancyGuard {
         require(!distributionCompleted, "Distribution already completed");
         require(recipientIds.length > 0, "No recipients registered");
 
-        uint256 contractBalance = balanceOf(address(this));
+        uint256 contractBalance = totalZakatCollected;
         require(contractBalance > 0, "No tokens to distribute");
 
         uint256 amountPerRecipient = contractBalance / recipientIds.length;

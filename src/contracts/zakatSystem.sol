@@ -324,9 +324,7 @@ contract ZakatSystem is ERC20, Ownable, ReentrancyGuard {
         if (distributionCompleted) {
             return 0;
         } else {
-            uint256 totalHeldByUsers = getCurrentRecipientTokens() +
-                getTotalShopOwnerTokens();
-            return totalSupply() - totalHeldByUsers;
+            return totalZakatCollected;
         }
     }
 }

@@ -60,7 +60,7 @@ const AgihZakat = () => {
       const [totalRecipients, totalShopOwners, undistributedTokens, isDistributed, totalDistributed] = await Promise.all([
         contract.getTotalRecipients(),
         contract.getTotalShopOwners(),
-        contract.totalZakatCollected(),
+        contract.getUndistributedTokens(),
         contract.distributionCompleted(),
         contract.getTotalDistributedTokens()
       ]);
@@ -301,7 +301,7 @@ const AgihZakat = () => {
 
           <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg shadow-sm">
             <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
-              Token Belum Diagihkan
+              Zakat Belum Diagihkan
             </h3>
             <p className="text-3xl font-bold text-gray-800 dark:text-white">
               {contractStats.undistributedTokens} ZKT

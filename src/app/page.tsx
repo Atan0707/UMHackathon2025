@@ -161,7 +161,9 @@ export default function Home() {
   const fetchZakatData = async () => {
     try {
       setIsLoading(true);
+      console.log(isLoading)
       setError(false);
+      console.log(error)
 
       // Create provider and connect to the contract
       const provider = new ethers.JsonRpcProvider(RPC_URL);
@@ -169,10 +171,9 @@ export default function Home() {
 
       // Get distributed and undistributed amounts
       const distributed = await contract.getTotalDistributedTokens();
-      const undistributed = await contract.getUndistributedTokens();
 
       // Calculate total collected (distributed + undistributed)
-      const collected = distributed + undistributed;
+      const collected = await contract.totalZakatCollected();
 
       // Format values (divide by 10^18 for 18 decimals and format with 2 decimal places)
       const formattedCollected = parseFloat(ethers.formatEther(collected)).toLocaleString('en-MY',
@@ -182,7 +183,9 @@ export default function Home() {
         { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
       setTotalCollected(formattedCollected);
+      console.log(totalCollected)
       setTotalDistributed(formattedDistributed);
+      console.log(totalDistributed)
     } catch (err) {
       console.error('Error fetching zakat data:', err);
       setError(true);
@@ -292,40 +295,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Zakat Dashboard - Redesigned */}
-        <div className="max-w-4xl mx-auto bg-gray-200 rounded-lg p-8 mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Zakat Dashboard</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Collected Zakat */}
-            <div className="bg-gray-700 rounded-lg p-6 text-center">
-              <div className="text-gray-300 mb-3">Total Zakat Collected</div>
-              {isLoading ? (
-                <div className="flex items-center justify-center h-14">
-                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-emerald-400"></div>
-                </div>
-              ) : error ? (
-                <div className="text-red-400 text-sm">Failed to load data</div>
-              ) : (
-                <div className="text-5xl font-bold text-emerald-400">RM {totalCollected}</div>
-              )}
-            </div>
-
-            {/* Distributed Zakat */}
-            <div className="bg-gray-700 rounded-lg p-6 text-center">
-              <div className="text-gray-300 mb-3">Total Zakat Distribution</div>
-              {isLoading ? (
-                <div className="flex items-center justify-center h-14">
-                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-emerald-400"></div>
-                </div>
-              ) : error ? (
-                <div className="text-red-400 text-sm">Failed to load data</div>
-              ) : (
-                <div className="text-5xl font-bold text-emerald-400">RM {totalDistributed}</div>
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* Nisab Values Section */}
         <div className="w-full bg-black py-14 mt-20">

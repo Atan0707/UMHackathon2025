@@ -43,7 +43,7 @@ export async function POST(request: Request) {
             <p>Pembayaran zakat anda telah direkodkan secara digital dalam sistem kami. Anda boleh melihat dan muat turun resit pembayaran dengan klik butang di bawah:</p>
             
             <div style="text-align: center; margin: 30px 0;">
-              <a href="http://localhost:3000/receipt/${receiptId}" style="background-color: #10B981; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Lihat Resit Pembayaran</a>
+              <a href="https://zakatchain.vercel.app/receipt/${receiptId}" style="background-color: #10B981; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Lihat Resit Pembayaran</a>
             </div>
             
             <p>Jika anda mempunyai sebarang pertanyaan, sila hubungi pihak kami di <a href="mailto:support@zakatpay.com">support@zakatpay.com</a>.</p>
