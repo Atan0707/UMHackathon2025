@@ -8,9 +8,9 @@ dataSources:
     name: ZakatSystem
     network: scroll-sepolia
     source:
-      address: "0xBE9d2Cab3F620fD0e4E5082757d25FFAE7E64906"
+      address: "0x787a1f923584a9EA096C503B2AF83aCA88fA2086"
       abi: ZakatSystem
-      startBlock: 9272290
+      startBlock: 9279925
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
