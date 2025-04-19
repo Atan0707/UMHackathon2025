@@ -251,7 +251,7 @@ export default function LiveLedger() {
               );
 
               if (shopOwner) {
-                fromDisplay = shopOwner.name;
+                fromDisplay = shopOwner.name;   
               } else if (fromDisplay === CONTRACT_ADDRESS) {
                 fromDisplay = 'ZakatContract';
               } else {
