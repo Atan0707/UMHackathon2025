@@ -17,6 +17,15 @@ export default function Withdraw() {
   const [showCompletionMessage, setShowCompletionMessage] = useState(false);
   const [processingStage, setProcessingStage] = useState<"initial" | "processing" | "completed">("initial");
   const [processProgress, setProcessProgress] = useState(0);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptData, setReceiptData] = useState<{
+    merchantId: string;
+    merchantName: string;
+    amount: string;
+    date: string;
+    txHash: string;
+    reference: string;
+  } | null>(null);
 
   const handleCheckBalance = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +90,7 @@ export default function Withdraw() {
     setShowCompletionMessage(false);
     setIsWithdrawing(true);
     setProcessingStage("processing");
+    setShowReceipt(false);
 
     // Start progress animation
     setProcessProgress(0);
@@ -154,6 +164,27 @@ export default function Withdraw() {
         balance: updatedBalance
       });
 
+      // Generate receipt data
+      const currentDate = new Date().toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      // Generate a unique reference number
+      const reference = `ZKT-${Date.now().toString().slice(-8)}-${Math.floor(Math.random() * 1000)}`;
+      
+      setReceiptData({
+        merchantId,
+        merchantName: merchantData.name,
+        amount: withdrawAmount,
+        date: currentDate,
+        txHash: tx.hash,
+        reference
+      });
+
       setSuccess(`Successfully withdrawn ${withdrawAmount} ZKT`);
       setWithdrawAmount("");
       setShowCompletionMessage(true);
@@ -177,6 +208,18 @@ export default function Withdraw() {
     setTxHash("");
     setShowCompletionMessage(false);
     setProcessingStage("initial");
+  };
+
+  const printReceipt = () => {
+    window.print();
+  };
+
+  const handleViewReceipt = () => {
+    setShowReceipt(true);
+  };
+
+  const handleCloseReceipt = () => {
+    setShowReceipt(false);
   };
 
   return (
@@ -221,6 +264,24 @@ export default function Withdraw() {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .receipt-modal, .receipt-modal * {
+            visibility: visible;
+          }
+          .receipt-modal {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+          .no-print {
+            display: none;
+          }
         }
       `}</style>
       <div className="min-h-screen py-20">
@@ -372,6 +433,12 @@ export default function Withdraw() {
                         <div className="mt-3 text-sm border-t border-emerald-800 pt-3 animate-fade-in">
                           <p className="font-medium">We have received your withdrawal request.</p>
                           <p className="mt-1 text-gray-300">The funds will be credited to your bank account within seven (7) working days.</p>
+                          <button
+                            onClick={handleViewReceipt}
+                            className="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm"
+                          >
+                            View Receipt
+                          </button>
                         </div>
                       )}
                     </div>
@@ -438,11 +505,105 @@ export default function Withdraw() {
                 <p className="text-gray-300 text-center mb-2">Your withdrawal of {withdrawAmount} ZKT has been processed</p>
                 <p className="text-gray-400 text-center text-sm mb-4">Funds will be credited to your bank account within 7 days</p>
 
-                <button
-                  onClick={() => setProcessingStage("initial")}
-                  className="mt-2 px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => setProcessingStage("initial")}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                  >
+                    Done
+                  </button>
+                  <button
+                    onClick={handleViewReceipt}
+                    className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    View Receipt
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Receipt Modal */}
+        {showReceipt && receiptData && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white text-black p-8 rounded-lg shadow-2xl max-w-md w-full receipt-modal">
+              <div className="flex flex-col">
+                <div className="border-b border-gray-200 pb-4 mb-4">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-2xl font-bold text-emerald-600">ZKT Receipt</h2>
+                    <button onClick={handleCloseReceipt} className="text-gray-400 hover:text-gray-600 no-print">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500">Withdrawal Confirmation</p>
+                </div>
+                
+                <div className="mb-6">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Merchant ID:</span>
+                    <span className="font-medium">{receiptData.merchantId}</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Merchant Name:</span>
+                    <span className="font-medium">{receiptData.merchantName}</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Reference No:</span>
+                    <span className="font-medium">{receiptData.reference}</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Date & Time:</span>
+                    <span className="font-medium">{receiptData.date}</span>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-100 p-4 rounded-lg mb-6">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Amount Withdrawn:</span>
+                    <span className="font-bold text-lg">{receiptData.amount} ZKT</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Status:</span>
+                    <span className="text-emerald-600 font-medium">Completed</span>
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <p className="text-sm text-gray-600 mb-2">Transaction Hash:</p>
+                  <p className="text-xs bg-gray-100 p-2 rounded overflow-hidden break-all">
+                    {receiptData.txHash}
+                  </p>
+                  <div className="mt-1 text-xs">
+                    <a 
+                      href={`https://sepolia.scrollscan.com/tx/${receiptData.txHash}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline no-print"
+                    >
+                      View on Scroll Explorer
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="border-t border-gray-200 pt-4 text-sm text-gray-500">
+                  <p>Funds will be credited to your bank account within 7 working days.</p>
+                  <p className="mt-2">For any inquiries, please contact support@zkt.finance</p>
+                </div>
+                
+                <button 
+                  onClick={printReceipt} 
+                  className="mt-6 px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors no-print flex items-center justify-center"
                 >
-                  Done
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  </svg>
+                  Print Receipt
                 </button>
               </div>
             </div>
