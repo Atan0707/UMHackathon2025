@@ -315,7 +315,7 @@ const AgihZakat = () => {
               Token Belum Diagihkan
             </h3>
             <p className="text-3xl font-bold text-gray-800 dark:text-white">
-              {parseInt(contractStats.undistributedTokens)} ZKT
+              {contractStats.undistributedTokens} ZKT
             </p>
           </div>
 
