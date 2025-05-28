@@ -1,4 +1,4 @@
-# ZakatChain: Transparent Islamic Charity Distribution
+# ZakatChain: TRANSPARENT ISLAMIC CHARITY DISTRIBUTION
 
 A decentralized platform revolutionizing zakat (Islamic charity) distribution through blockchain technology, ensuring complete transparency and accountability.
 
@@ -65,6 +65,6 @@ Then, run the development server:
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application
 
 
